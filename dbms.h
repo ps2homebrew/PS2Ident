@@ -1,0 +1,15 @@
+int PS2IDBMS_LoadDatabase(const char *path);
+void PS2IDBMS_UnloadDatabase(void);
+int PS2IDBMS_SaveDatabase(const char *path);
+int PS2IDBMS_AddModel(int id, const struct PS2IDBComponentEntry *entry);
+int PS2IDBMS_AddMainboardModel(const struct PS2IDBMainboardEntry *entry);
+unsigned int PS2IDBMS_GetNumDatabaseRecords(int id);
+const struct PS2IDBComponentEntry *PS2IDBMS_GetDatabaseRecord(int id, unsigned int index);
+const struct PS2IDBMainboardEntry *PS2IDBMS_GetMainboardDatabaseRecord(unsigned int index);
+int PS2IDBMS_UpdateModel(int id, unsigned int index, const struct PS2IDBComponentEntry *entry);
+int PS2IDBMS_UpdateMainboardModel(unsigned int index, const struct PS2IDBMainboardEntry *entry);
+int PS2IDBMS_DeleteRecord(int id, unsigned int index);
+int PS2IDBMS_DeleteMainboardRecord(unsigned int index);
+const char *PS2IDBMS_LookupComponentModel(unsigned short int component, unsigned int id);
+const struct PS2IDBMainboardEntry *PS2IDBMS_LookupMainboardModel(const struct PS2IDBMainboardEntry *);
+const struct PS2IDBMainboardEntry *PS2IDBMS_LookupMatchingROM(const struct PS2IDBMainboardEntry *model);

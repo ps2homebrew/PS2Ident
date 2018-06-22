@@ -1,0 +1,34 @@
+0xbf9007c4 (?)	- SPU2 revision (16-bit)
+
+0xbf803800 - BOARDid (16-bit)
+
+[IOP] 0xFFFE0130	- CACHE_CONFIG
+[IOP] 0xbf801450	- CTRL register
+
+ROMGEN (In rom0):
+0xbfc00100	- Month and date (16-bit)
+0xbfc00102	- Year (16-bit)
+
+From LIBCDVD:
+
+unsigned int _gp_store __attribute__((section(".bss")));
+
+#define StoreGP() \
+	__asm __volatile__ ("
+	sw $gp, 0(%0)
+	li $gp,0" :: "r"(_gp_store))
+
+#define RestoreGP() \
+	__asm __volatile ("
+	lw $gp, 0(%0)" :: "r"(_gp_store))
+
+ROM sizes:
+Get from the DECR field (20:16) of the timing registers of the SSBUSC:
+	DVD ROM (DEV1)
+	Boot ROM (DEV2)
+
+	On the DTL-T10000, DEV1 exists, but does not contain a DVD Player.
+	Instead, it contains information on the installed hardware, at memory address 0x1FBF0000.
+
+	DEV1 was possibly originally located at 0x1FA00000 (after DEV2), as that is the power-on address for DEV1.
+	However, it might have been moved to 0x1E000000 (before DEV2), after its size was increased.
