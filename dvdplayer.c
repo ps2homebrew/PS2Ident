@@ -22,11 +22,6 @@ static struct DVDPlayer ROMDVDPlayer;
 static char dvdid[] = "rom1:DVDID?";
 static char dvdver[] = "rom1:DVDVER?";
 
-//As our homebrew SDK can be linked against any either fileio or fileXio
-extern int (*_ps2sdk_close)(int) __attribute__((section("data")));
-extern int (*_ps2sdk_open)(const char*, int) __attribute__((section("data")));
-extern int (*_ps2sdk_read)(int, void*, int) __attribute__((section("data")));
-
 extern char ConsoleROMVER[ROMVER_MAX_LEN];
 
 int DVDPlayerInit(void)

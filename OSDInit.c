@@ -27,11 +27,6 @@ static u8 ConsoleRegionData[16] = {0, 0, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 //Perhaps it once used to read more configuration blocks (original capacity was 7 blocks).
 static u8 OSDConfigBuffer[CONFIG_BLOCK_SIZE * 2];
 
-//As our homebrew SDK can be linked against any either fileio or fileXio
-extern int (*_ps2sdk_close)(int) __attribute__((section("data")));
-extern int (*_ps2sdk_open)(const char*, int) __attribute__((section("data")));
-extern int (*_ps2sdk_read)(int, void*, int) __attribute__((section("data")));
-
 //Local function prototypes
 static int InitMGRegion(void);
 static int ConsoleInitRegion(void);

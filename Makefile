@@ -9,9 +9,9 @@ EE_IOP_OBJS = SIO2MAN_irx.o MCMAN_irx.o MCSERV_irx.o PADMAN_irx.o POWEROFF_irx.o
 EE_GRAPHICS_OBJS = buttons.o devices.o background_img.o
 EE_OBJS = main.o system.o UI.o menu.o ident.o dbms.o SYSMAN_rpc.o graphics.o font.o pad.o DeviceSupport.o crc16.o libcdvd_add.o OSDInit.o modelname.o dvdplayer.o ps1.o $(EE_IOP_OBJS) $(EE_GRAPHICS_OBJS)
 
-EE_INCS := -I$(PS2SDK)/ee/include -I$(PS2SDK)/common/include -I. -I$(PS2SDK)/ports/include
-EE_LDFLAGS :=  -L$(PS2SDK)/ee/lib -L$(PS2SDK)/ports/lib -nostartfiles $(PS2SDK)/ee/startup/crt0.o -Tlinkfile -s
-EE_LIBS := -lgs -lpng -lz -lm -lcdvd -lmc -lpadx -lpatches -liopreboot -lfreetype -lc -lkernel
+EE_INCS := -I$(PS2SDK)/ee/include -I$(PS2SDK)/ports/include/freetype2 -I$(PS2SDK)/common/include -I. -I$(PS2SDK)/ports/include
+EE_LDFLAGS :=  -L$(PS2SDK)/ee/lib -L$(PS2SDK)/ports/lib -s
+EE_LIBS := -lgs -lpng -lzlib -lcdvd -lmc -lpadx -lpatches -liopreboot -lfreetype -lm
 EE_GPVAL = -G383
 EE_CFLAGS += -D_EE -O2 -mgpopt $(EE_GPVAL)
 

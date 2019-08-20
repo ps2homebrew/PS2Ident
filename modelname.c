@@ -9,12 +9,6 @@
 #include "main.h"
 #include "modelname.h"
 
-//As our homebrew SDK can be linked against any either fileio or fileXio
-extern int (*_ps2sdk_close)(int) __attribute__((section("data")));
-extern int (*_ps2sdk_open)(const char*, int) __attribute__((section("data")));
-extern int (*_ps2sdk_read)(int, void*, int) __attribute__((section("data")));
-extern int (*_ps2sdk_lseek)(int, int, int) __attribute__((section("data")));
-
 #define MODEL_NAME_MAX_LEN	17
 static char ModelName[MODEL_NAME_MAX_LEN];
 

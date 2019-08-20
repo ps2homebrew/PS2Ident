@@ -10,11 +10,6 @@
 #include "ps1.h"
 #include "OSDInit.h"
 
-//As our homebrew SDK can be linked against any either fileio or fileXio
-extern int (*_ps2sdk_close)(int) __attribute__((section("data")));
-extern int (*_ps2sdk_open)(const char*, int) __attribute__((section("data")));
-extern int (*_ps2sdk_read)(int, void*, int) __attribute__((section("data")));
-
 struct PS1DRV{
 	char ver[32];
 	int major;
