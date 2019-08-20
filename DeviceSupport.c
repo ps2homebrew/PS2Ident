@@ -53,6 +53,9 @@ int GetHasDeviceSufficientSpace(const char *device, int unit, const struct Requi
 	else if(!strcmp(device, "mass")){
 		result=HasMassUnitSufficientSpace(unit, RequiredSpaceStats, NumFileEntries);
 	}
+	else if(!strcmp(device, "host")){
+		result=HasHostUnitSufficientSpace(unit, RequiredSpaceStats, NumFileEntries);
+	}
 	else result=-ENODEV;
 
 	return result;
@@ -93,6 +96,10 @@ int HasMcUnitSufficientSpace(int unit, const struct RequiredFileSpaceStat *Requi
 }
 
 int HasMassUnitSufficientSpace(int unit, const struct RequiredFileSpaceStat *RequiredSpaceStats, unsigned int NumFileEntries){
+	return 1;
+}
+
+int HasHostUnitSufficientSpace(int unit, const struct RequiredFileSpaceStat *RequiredSpaceStats, unsigned int NumFileEntries){
 	return 1;
 }
 
@@ -153,6 +160,9 @@ int GetIsDeviceUnitReady(const char *device, int unit){
 	}
 	else if(strcmp(device, "mass")==0){
 		result=MassUnitStatus[unit];
+	}
+	else if(strcmp(device, "host")==0){
+		result=1;
 	}
 	else result=-ENODEV;
 

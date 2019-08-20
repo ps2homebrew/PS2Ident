@@ -56,18 +56,19 @@ char ConsoleROMVER[ROMVER_MAX_LEN];
 
 static int InitMGRegion(void)
 {
-	int result, status;
+	u32 stat;
+	int result;
 
-	if(ConsoleRegionParamInitStatus==0)
+	if(ConsoleRegionParamInitStatus == 0)
 	{
 		do{
-			if((result=sceCdAltReadRegionParams(ConsoleRegionData, &status))==0)
+			if((result = sceCdAltReadRegionParams(ConsoleRegionData, &stat)) == 0)
 			{	//Failed.
 				ConsoleRegionParamInitStatus=1;
 			}
 			else
 			{
-				if(status&0x100)
+				if(stat & 0x100)
 				{
 					//MECHACON does not support this function.
 					ConsoleRegionParamInitStatus=-1;
@@ -78,7 +79,7 @@ static int InitMGRegion(void)
 					ConsoleRegionParamInitStatus=1;
 				}
 			}
-		}while((result==0) || (status&0x80));
+		}while((result == 0) || (stat & 0x80));
 	}
 
 	return ConsoleRegionParamInitStatus;
@@ -423,11 +424,11 @@ static int ReadOSDConfigPS2(OSDConfig2_t *config, const OSDConfigStore_t* OSDCon
 	config->timeFormat = OSDConfigBuffer->PS2.timeFormat;
 	config->dateFormat = OSDConfigBuffer->PS2.dateFormat;
 	config->timezoneOffset = OSDConfigBuffer->PS2.timezoneOffsetLo | ((u32)OSDConfigBuffer->PS2.timezoneOffsetHi) << 8;
-	config->unknown20 = OSDConfigBuffer->PS2.unknownB14Lo | (((u32)OSDConfigBuffer->PS2.unknownB14Hi) << 8);
-	config->unknown02 = OSDConfigBuffer->PS2.unknownB13_07;
-	config->unknown03 = OSDConfigBuffer->PS2.unknownB13_06;
-	config->unknown04 = OSDConfigBuffer->PS2.unknownB13_05;
-	config->unknown05 = OSDConfigBuffer->PS2.unknownB13_04;
+	config->timezone = OSDConfigBuffer->PS2.timezoneLo | (((u32)OSDConfigBuffer->PS2.timezoneHi) << 8);
+	config->rcEnabled = OSDConfigBuffer->PS2.rcEnabled;
+	config->rcGameFunction = OSDConfigBuffer->PS2.rcGameFunction;
+	config->rcSupported = OSDConfigBuffer->PS2.rcSupported;
+	config->dvdpProgressive = OSDConfigBuffer->PS2.dvdpProgressive;
 
 	return(OSDConfigBuffer->PS2.osdInit ^ 1);
 }
@@ -450,12 +451,10 @@ static void WriteOSDConfigPS1(OSDConfigStore_t* OSDConfigBuffer, const OSDConfig
 
 static int WriteOSDConfigPS2(OSDConfigStore_t* OSDConfigBuffer, const OSDConfig2_t *config, u8 invalid)
 {
-	int japLanguage, b16_unknown, osdInitValue;
+	int japLanguage, version, osdInitValue;
 
 	osdInitValue = invalid ^ 1;
-	
-	//May be another version flag that marks the language field as being valid.
-	b16_unknown = OSDConfigBuffer->PS2.extendedLanguage == 0 ? 1 : OSDConfigBuffer->PS2.extendedLanguage;
+	version = OSDConfigBuffer->PS2.extendedLanguage == 0 ? 1 : OSDConfigBuffer->PS2.extendedLanguage;
 
 	if(config->language <= LANGUAGE_ENGLISH)
 		japLanguage = config->language;
@@ -471,7 +470,7 @@ static int WriteOSDConfigPS2(OSDConfigStore_t* OSDConfigBuffer, const OSDConfig2
 
 	//0x10
 	OSDConfigBuffer->PS2.language = config->language;
-	OSDConfigBuffer->PS2.unknown2 = b16_unknown;
+	OSDConfigBuffer->PS2.version = version;
 	
 	//0x11
 	OSDConfigBuffer->PS2.timezoneOffsetHi = config->timezoneOffset >> 8;
@@ -484,51 +483,53 @@ static int WriteOSDConfigPS2(OSDConfigStore_t* OSDConfigBuffer, const OSDConfig2
 	OSDConfigBuffer->PS2.timezoneOffsetLo = config->timezoneOffset;
 
 	//0x13
-	OSDConfigBuffer->PS2.unknownB14Hi = config->unknown20 >> 8;
+	OSDConfigBuffer->PS2.timezoneHi = config->timezone >> 8;
 	OSDConfigBuffer->PS2.unknownB13_01 = OSDConfigBuffer->PS2.unknownB13_01;	//Carry over
-	OSDConfigBuffer->PS2.unknownB13_07 = config->unknown02;
-	OSDConfigBuffer->PS2.unknownB13_06 = config->unknown03;
-	OSDConfigBuffer->PS2.unknownB13_05 = config->unknown04;
-	OSDConfigBuffer->PS2.unknownB13_04 = config->unknown05;
+	OSDConfigBuffer->PS2.rcEnabled = config->rcEnabled;
+	OSDConfigBuffer->PS2.rcGameFunction = config->rcGameFunction;
+	OSDConfigBuffer->PS2.rcSupported = config->rcSupported;
+	OSDConfigBuffer->PS2.dvdpProgressive = config->dvdpProgressive;
 
 	//0x14
-	OSDConfigBuffer->PS2.unknownB14Lo = config->unknown20;
+	OSDConfigBuffer->PS2.timezoneLo = config->timezone;
 }
 
 static void ReadConfigFromNVM(u8 *buffer)
-{	/*	Hmm. What should the check for OpResult be? In v1.xx, it seems to be a check against 0x9. In v2.20, it checks against 0x81.
+{	/*	Hmm. What should the check for stat be? In v1.xx, it seems to be a check against 0x9. In v2.20, it checks against 0x81.
 		In the HDD Browser, reading checks against 0x81, while writing checks against 0x9.
-		But because we are targeting the default CDVDMAN module, it would be probably safer to follow the early browsers. */
-	int OpResult, result;
+		But because we are targeting all consoles, it would be probably safer to follow the HDD Browser. */
+	int result;
+	u32 stat;
 
 	do{
-		sceCdOpenConfig(1, 0, 2, &OpResult);
-	}while(OpResult&9);
+		sceCdOpenConfig(1, 0, 2, &stat);
+	}while(stat & 0x81);
 
 	do{
-		result=sceCdReadConfig(buffer, &OpResult);
-	}while(OpResult&9 || result==0);
+		result=sceCdReadConfig(buffer, &stat);
+	}while((stat & 0x81) || (result == 0));
 
 	do{
-		result=sceCdCloseConfig(&OpResult);
-	}while(OpResult&9 || result==0);
+		result=sceCdCloseConfig(&stat);
+	}while((stat & 0x81) || (result == 0));
 }
 
 static void WriteConfigToNVM(const u8 *buffer)
 {	// Read the comment in ReadConfigFromNVM() about the error status bits.
-	int OpResult, result;
+	u32 stat;
+	int result;
 
 	do{
-		sceCdOpenConfig(1, 1, 2, &OpResult);
-	}while(OpResult&9);
+		sceCdOpenConfig(1, 1, 2, &stat);
+	}while(stat & 0x09);
 
 	do{
-		result=sceCdWriteConfig(buffer, &OpResult);
-	}while(OpResult&9 || result==0);
+		result=sceCdWriteConfig(buffer, &stat);
+	}while((stat & 0x09) || (result == 0));
 
 	do{
-		result=sceCdCloseConfig(&OpResult);
-	}while(OpResult&9 || result==0);
+		result=sceCdCloseConfig(&stat);
+	}while((stat & 9) || (result == 0));
 }
 
 int OSDLoadConfigFromNVM(OSDConfig1_t *osdConfigPS1, OSDConfig2_t *osdConfigPS2)

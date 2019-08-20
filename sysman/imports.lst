@@ -1,3 +1,7 @@
+romdrv_IMPORTS_start
+I_romGetDevice
+romdrv_IMPORTS_end
+
 loadcore_IMPORTS_start
 I_GetLoadcoreInternalData
 I_QueryBootMode

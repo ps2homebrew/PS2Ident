@@ -34,6 +34,8 @@ extern GS_IMAGE DeviceIconTexture;
 
 extern unsigned short int SelectButton, CancelButton;
 
+static int DumpSystemROM(const char *path, const struct SystemInformation *SystemInformation);
+
 #define MAIN_MENU_BTN_DUMP	0xFF	//Special button!
 
 enum EEGS_ID{
@@ -151,6 +153,7 @@ enum DEV9_ID{
 	DEV9_ID_SPEED_NAME,
 	DEV9_ID_SPEED_CAPS_LBL,
 	DEV9_ID_SPEED_CAPS,
+	DEV9_ID_SPEED_CAPS_SEP,
 	DEV9_ID_SPEED_REV8,
 	DEV9_ID_SPEED_CAPS_DESC,
 	DEV9_ID_MAC_ADDR_LBL,
@@ -358,7 +361,7 @@ static struct UIMenuItem DEV9MenuItems[]={
 
 	{MITEM_LABEL, DEV9_ID_SPEED_REV_LBL, 0, 0, 0, 0, 0, SYS_UI_LBL_SPEED_REVISION}, {MITEM_TAB}, {MITEM_TAB}, {MITEM_VALUE, DEV9_ID_SPEED_REV, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 4},
 		{MITEM_TAB}, {MITEM_STRING, DEV9_ID_SPEED_NAME, MITEM_FLAG_READONLY}, {MITEM_BREAK},
-	{MITEM_LABEL, DEV9_ID_SPEED_CAPS_LBL, 0, 0, 0, 0, 0, SYS_UI_LBL_SPEED_CAPS}, {MITEM_TAB}, {MITEM_VALUE, DEV9_ID_SPEED_CAPS, MITEM_FLAG_READONLY, MITEM_FORMAT_HEX, 4}, {MITEM_DOT}, {MITEM_VALUE, DEV9_ID_SPEED_REV8, MITEM_FLAG_READONLY, MITEM_FORMAT_HEX, 4}, {MITEM_BREAK},
+	{MITEM_LABEL, DEV9_ID_SPEED_CAPS_LBL, 0, 0, 0, 0, 0, SYS_UI_LBL_SPEED_CAPS}, {MITEM_TAB}, {MITEM_VALUE, DEV9_ID_SPEED_CAPS, MITEM_FLAG_READONLY, MITEM_FORMAT_HEX, 4}, {MITEM_DOT, DEV9_ID_SPEED_CAPS_SEP}, {MITEM_VALUE, DEV9_ID_SPEED_REV8, MITEM_FLAG_READONLY, MITEM_FORMAT_HEX, 4}, {MITEM_BREAK},
 		{MITEM_TAB}, {MITEM_STRING, DEV9_ID_SPEED_CAPS_DESC, MITEM_FLAG_READONLY}, {MITEM_BREAK},
 
 	{MITEM_BREAK},
@@ -430,7 +433,11 @@ static struct UIMenu ExtBusReportMenu = { &DEV9ReportMenu, NULL, ExtBusMenuItems
 	SelectedMenuOption -> The element in the menu that is currently selected.
 */
 
+#ifndef DSNET_HOST_SUPPORT
 #define NUM_SUPPORTED_DEVICES	3
+#else
+#define NUM_SUPPORTED_DEVICES	4
+#endif
 
 struct SupportedDevice{
 	const char *name;
@@ -466,17 +473,32 @@ static int GetUserSaveDeviceSelection(char *SelectedDevice, const struct Require
 			0,
 			DEVICE_TYPE_USB_DISK,
 			0,
-		}
+		},
+#ifdef DSNET_HOST_SUPPORT
+		{
+			"host",
+			NULL, NULL,
+			0,
+			DEVICE_TYPE_USB_DISK,
+			0,
+		},
+#endif
 	};
 	static const unsigned int IconFileSelMenuDevStringIDs[NUM_SUPPORTED_DEVICES]={
 		SYS_UI_LBL_DEV_MC,
 		SYS_UI_LBL_DEV_MC,
-		SYS_UI_LBL_DEV_MASS
+		SYS_UI_LBL_DEV_MASS,
+#ifdef DSNET_HOST_SUPPORT
+		SYS_UI_LBL_DEV_MASS,
+#endif
 	};
 	static const unsigned int IconFileSelMenuDevUnitStringIDs[NUM_SUPPORTED_DEVICES]={
 		SYS_UI_LBL_MC_SLOT_1,
 		SYS_UI_LBL_MC_SLOT_2,
-		SYS_UI_LBL_COUNT
+		SYS_UI_LBL_COUNT,
+#ifdef DSNET_HOST_SUPPORT
+		SYS_UI_LBL_COUNT,
+#endif
 	};
 
 	//Allow the user to browse for icon sets on mc0:, mc1: and mass:.
@@ -626,10 +648,18 @@ static int DumpSystemROMScreen(const struct SystemInformation *SystemInformation
 	}
 
 	if((GetUserSaveDeviceSelection(DumpPath, RequiredSpace, NumFiles))==0){
-		unsigned int serial;
+#ifndef DSNET_HOST_SUPPORT
+		if(!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_CONSOLEID))
+		{
+			u32 serial;
 
-		serial=((unsigned int)SystemInformation->ConsoleID[6])<<16 | ((unsigned int)SystemInformation->ConsoleID[5])<<8 | ((unsigned int)SystemInformation->ConsoleID[4]);
-		sprintf(&DumpPath[strlen(DumpPath)], "/%s_%07u", SystemInformation->mainboard.ModelName, serial);
+			serial=((u32)SystemInformation->ConsoleID[6])<<16 | ((u32)SystemInformation->ConsoleID[5])<<8 | ((u32)SystemInformation->ConsoleID[4]);
+			sprintf(&DumpPath[strlen(DumpPath)], "/%s_%07u", SystemInformation->mainboard.ModelName, serial);
+		}
+		else
+		{
+			sprintf(&DumpPath[strlen(DumpPath)], "/%s_noserial", SystemInformation->mainboard.ModelName);
+		}
 
 		DisplayFlashStatusUpdate(SYS_UI_MSG_PLEASE_WAIT);
 
@@ -642,6 +672,9 @@ static int DumpSystemROMScreen(const struct SystemInformation *SystemInformation
 		else{
 			DisplayErrorMessage(SYS_UI_MSG_DEV_ACC_ERR);
 		}
+#else
+		DumpSystemROM(DumpPath, SystemInformation);
+#endif
 	}
 
 	return 0;
@@ -653,7 +686,7 @@ static void LoadEEGSInformation(const struct SystemInformation *SystemInformatio
 	UISetValue(&EEGSReportMenu, EEGS_ID_EE_IMPL, SystemInformation->mainboard.ee.implementation);
 	UISetValue(&EEGSReportMenu, EEGS_ID_EE_REV_MAJOR, SystemInformation->mainboard.ee.revision>>4);
 	UISetValue(&EEGSReportMenu, EEGS_ID_EE_REV_MINOR, SystemInformation->mainboard.ee.revision&0xF);
-	UISetString(&EEGSReportMenu, EEGS_ID_EE_NAME, GetEEChipDesc((unsigned short int)(SystemInformation->mainboard.ee.implementation)<<8|SystemInformation->mainboard.ee.revision));
+	UISetString(&EEGSReportMenu, EEGS_ID_EE_NAME, GetEEChipDesc((u16)(SystemInformation->mainboard.ee.implementation)<<8|SystemInformation->mainboard.ee.revision));
 	UISetValue(&EEGSReportMenu, EEGS_ID_EE_FPU_IMPL, SystemInformation->mainboard.ee.FPUImplementation);
 	UISetValue(&EEGSReportMenu, EEGS_ID_EE_FPU_REV_MAJOR, SystemInformation->mainboard.ee.FPURevision>>4);
 	UISetValue(&EEGSReportMenu, EEGS_ID_EE_FPU_REV_MINOR, SystemInformation->mainboard.ee.FPURevision&0xF);
@@ -664,7 +697,7 @@ static void LoadEEGSInformation(const struct SystemInformation *SystemInformatio
 	//GS
 	UISetValue(&EEGSReportMenu, EEGS_ID_GS_REV_MAJOR, SystemInformation->mainboard.gs.revision>>4);
 	UISetValue(&EEGSReportMenu, EEGS_ID_GS_REV_MINOR, SystemInformation->mainboard.gs.revision&0xF);
-	UISetString(&EEGSReportMenu, EEGS_ID_GS_NAME, GetGSChipDesc((unsigned short int)(SystemInformation->mainboard.gs.id)<<8|SystemInformation->mainboard.gs.revision));
+	UISetString(&EEGSReportMenu, EEGS_ID_GS_NAME, GetGSChipDesc((u16)(SystemInformation->mainboard.gs.id)<<8|SystemInformation->mainboard.gs.revision));
 
 	UISetValue(&EEGSReportMenu, EEGS_ID_GS_ID, SystemInformation->mainboard.gs.id);
 }
@@ -684,7 +717,15 @@ static void LoadIOPSPU2Information(const struct SystemInformation *SystemInforma
 
 static void LoadBoardInformation(const struct SystemInformation *SystemInformation)
 {
-	UISetString(&BoardReportMenu, BOARD_ID_MODEL_NAME, SystemInformation->mainboard.ModelName);
+	if(!(SystemInformation->mainboard.status&PS2IDB_STAT_ERR_MNAME))
+	{
+		UISetType(&BoardReportMenu, BOARD_ID_MODEL_NAME, MITEM_STRING);
+		UISetString(&BoardReportMenu, BOARD_ID_MODEL_NAME, SystemInformation->mainboard.ModelName);
+	}
+	else
+	{
+		UISetType(&BoardReportMenu, BOARD_ID_MODEL_NAME, MITEM_DASH);
+	}
 	UISetString(&BoardReportMenu, BOARD_ID_BOARD_NAME, SystemInformation->mainboard.MainboardName);
 	UISetString(&BoardReportMenu, BOARD_ID_CHASSIS_NAME, SystemInformation->chassis);
 	UISetValue(&BoardReportMenu, BOARD_ID_MACHINE_TYPE, SystemInformation->mainboard.MachineType);
@@ -705,18 +746,45 @@ static void LoadBoardInformation(const struct SystemInformation *SystemInformati
 
 static void LoadBoard2Information(const struct SystemInformation *SystemInformation)
 {
-	unsigned int modelID;
-	unsigned short int conModelID;
+	u32 modelID;
+	u16 conModelID;
 
-	UISetValue(&Board2ReportMenu, BOARD2_ID_MECHA_REV_MAJOR, SystemInformation->mainboard.MECHACONVersion[1]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_MECHA_REV_MINOR, SystemInformation->mainboard.MECHACONVersion[2]);
-	UISetString(&Board2ReportMenu, BOARD2_ID_MECHA_NAME, GetMECHACONChipDesc((unsigned int)(SystemInformation->mainboard.MECHACONVersion[1])<<8|(unsigned int)(SystemInformation->mainboard.MECHACONVersion[2])));
-	UISetValue(&Board2ReportMenu, BOARD2_ID_MECHA_REGION, SystemInformation->mainboard.MECHACONVersion[0]);
-	UISetString(&Board2ReportMenu, BOARD2_ID_MECHA_REGION_NAME, GetRegionDesc(SystemInformation->mainboard.MECHACONVersion[0]));
-	UISetValue(&Board2ReportMenu, BOARD2_ID_MECHA_TYPE, SystemInformation->mainboard.MECHACONVersion[3]);
-	UISetString(&Board2ReportMenu, BOARD2_ID_MECHA_TYPE_NAME, GetSystemTypeDesc(SystemInformation->mainboard.MECHACONVersion[3]));
-	UISetValue(&Board2ReportMenu, BOARD2_ID_ADD010, SystemInformation->mainboard.ADD010);
-	UISetString(&Board2ReportMenu, BOARD2_ID_ADD010_DESC, GetADD010Desc(SystemInformation->mainboard.ADD010));
+	if(!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MVER))
+	{
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_REV_MAJOR, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_MECHA_REV_MAJOR, SystemInformation->mainboard.MECHACONVersion[1]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_REV_MINOR, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_MECHA_REV_MINOR, SystemInformation->mainboard.MECHACONVersion[2]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_NAME, MITEM_STRING);
+		UISetString(&Board2ReportMenu, BOARD2_ID_MECHA_NAME, GetMECHACONChipDesc((u32)(SystemInformation->mainboard.MECHACONVersion[1])<<8|(u32)(SystemInformation->mainboard.MECHACONVersion[2])));
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_REGION, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_MECHA_REGION, SystemInformation->mainboard.MECHACONVersion[0]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_REGION_NAME, MITEM_STRING);
+		UISetString(&Board2ReportMenu, BOARD2_ID_MECHA_REGION_NAME, GetRegionDesc(SystemInformation->mainboard.MECHACONVersion[0]));
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_TYPE, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_MECHA_TYPE, SystemInformation->mainboard.MECHACONVersion[3]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_TYPE_NAME, MITEM_STRING);
+		UISetString(&Board2ReportMenu, BOARD2_ID_MECHA_TYPE_NAME, GetSystemTypeDesc(SystemInformation->mainboard.MECHACONVersion[3]));
+	} else {
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_REV_MAJOR, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_REV_MINOR, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_NAME, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_REGION, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_REGION_NAME, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_TYPE, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_TYPE_NAME, MITEM_DASH);
+	}
+
+	if(!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_ADD010))
+	{
+		UISetType(&Board2ReportMenu, BOARD2_ID_ADD010, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_ADD010, SystemInformation->mainboard.ADD010);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ADD010_DESC, MITEM_STRING);
+		UISetString(&Board2ReportMenu, BOARD2_ID_ADD010_DESC, GetADD010Desc(SystemInformation->mainboard.ADD010));
+	} else {
+		UISetType(&Board2ReportMenu, BOARD2_ID_ADD010, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ADD010_DESC, MITEM_DASH);
+	}
 
 	if(SystemInformation->mainboard.MECHACONVersion[1] < 5 || (SystemInformation->mainboard.status&PS2IDB_STAT_ERR_MRENEWDATE))
 	{
@@ -738,30 +806,89 @@ static void LoadBoard2Information(const struct SystemInformation *SystemInformat
 		UISetValue(&Board2ReportMenu, BOARD2_ID_MECHA_RENEWAL_MINUTE, SystemInformation->mainboard.MRenewalDate[4]);
 	}
 
-	modelID = SystemInformation->mainboard.ModelID[0] | SystemInformation->mainboard.ModelID[1] << 8 | SystemInformation->mainboard.ModelID[2] << 16;
-	conModelID = SystemInformation->mainboard.ConModelID[0] | SystemInformation->mainboard.ConModelID[1] << 8;
-	UISetValue(&Board2ReportMenu, BOARD2_ID_SERIAL, ((unsigned int)SystemInformation->ConsoleID[6])<<16 | ((unsigned int)SystemInformation->ConsoleID[5])<<8 | ((unsigned int)SystemInformation->ConsoleID[4]));
-	UISetValue(&Board2ReportMenu, BOARD2_ID_MODEL_ID, modelID);
-	UISetString(&Board2ReportMenu, BOARD2_ID_MODEL_ID_DESC, GetModelIDDesc(conModelID));
-	UISetValue(&Board2ReportMenu, BOARD2_ID_CON_MODEL_ID, conModelID);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_EMCS_ID, SystemInformation->mainboard.EMCSID);
-	UISetString(&Board2ReportMenu, BOARD2_ID_EMCS_ID_DESC, GetEMCSIDDesc(SystemInformation->mainboard.EMCSID));
-	UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_00, SystemInformation->iLinkID[0]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_01, SystemInformation->iLinkID[1]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_02, SystemInformation->iLinkID[2]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_03, SystemInformation->iLinkID[3]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_04, SystemInformation->iLinkID[4]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_05, SystemInformation->iLinkID[5]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_06, SystemInformation->iLinkID[6]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_07, SystemInformation->iLinkID[7]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_00, SystemInformation->ConsoleID[0]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_01, SystemInformation->ConsoleID[1]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_02, SystemInformation->ConsoleID[2]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_03, SystemInformation->ConsoleID[3]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_04, SystemInformation->ConsoleID[4]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_05, SystemInformation->ConsoleID[5]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_06, SystemInformation->ConsoleID[6]);
-	UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_07, SystemInformation->ConsoleID[7]);
+	if(!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_ILINKID))
+	{
+		modelID = SystemInformation->mainboard.ModelID[0] | SystemInformation->mainboard.ModelID[1] << 8 | SystemInformation->mainboard.ModelID[2] << 16;
+
+		UISetType(&Board2ReportMenu, BOARD2_ID_MODEL_ID, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_MODEL_ID, modelID);
+		UISetType(&Board2ReportMenu, BOARD2_ID_MODEL_ID_DESC, MITEM_STRING);
+		UISetString(&Board2ReportMenu, BOARD2_ID_MODEL_ID_DESC, GetModelIDDesc(conModelID));
+
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_00, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_00, SystemInformation->iLinkID[0]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_01, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_01, SystemInformation->iLinkID[1]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_02, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_02, SystemInformation->iLinkID[2]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_03, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_03, SystemInformation->iLinkID[3]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_04, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_04, SystemInformation->iLinkID[4]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_05, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_05, SystemInformation->iLinkID[5]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_06, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_06, SystemInformation->iLinkID[6]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_07, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_07, SystemInformation->iLinkID[7]);
+	} else {
+		UISetType(&Board2ReportMenu, BOARD2_ID_MODEL_ID, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_MODEL_ID_DESC, MITEM_DASH);
+
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_00, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_01, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_02, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_03, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_04, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_05, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_06, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_07, MITEM_DASH);
+	}
+
+	if(!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_CONSOLEID))
+	{
+		conModelID = SystemInformation->mainboard.ConModelID[0] | SystemInformation->mainboard.ConModelID[1] << 8;
+
+		UISetType(&Board2ReportMenu, BOARD2_ID_SERIAL, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_SERIAL, ((u32)SystemInformation->ConsoleID[6])<<16 | ((u32)SystemInformation->ConsoleID[5])<<8 | ((u32)SystemInformation->ConsoleID[4]));
+		UISetType(&Board2ReportMenu, BOARD2_ID_CON_MODEL_ID, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_CON_MODEL_ID, conModelID);
+		UISetType(&Board2ReportMenu, BOARD2_ID_EMCS_ID, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_EMCS_ID, SystemInformation->mainboard.EMCSID);
+		UISetType(&Board2ReportMenu, BOARD2_ID_EMCS_ID_DESC, MITEM_STRING);
+		UISetString(&Board2ReportMenu, BOARD2_ID_EMCS_ID_DESC, GetEMCSIDDesc(SystemInformation->mainboard.EMCSID));
+
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_00, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_00, SystemInformation->ConsoleID[0]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_01, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_01, SystemInformation->ConsoleID[1]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_02, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_02, SystemInformation->ConsoleID[2]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_03, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_03, SystemInformation->ConsoleID[3]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_04, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_04, SystemInformation->ConsoleID[4]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_05, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_05, SystemInformation->ConsoleID[5]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_06, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_06, SystemInformation->ConsoleID[6]);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_07, MITEM_VALUE);
+		UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_07, SystemInformation->ConsoleID[7]);
+	} else {
+		UISetType(&Board2ReportMenu, BOARD2_ID_SERIAL, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CON_MODEL_ID, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_EMCS_ID, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_EMCS_ID_DESC, MITEM_DASH);
+
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_00, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_01, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_02, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_03, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_04, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_05, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_06, MITEM_DASH);
+		UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_07, MITEM_DASH);
+	}
 }
 
 static void LoadROMInformation(const struct SystemInformation *SystemInformation)
@@ -877,6 +1004,8 @@ static void DEV9MenuDisplay(int DeviceConnected)
 	UISetVisible(&DEV9ReportMenu, DEV9_ID_SPEED_NAME, DeviceConnected);
 	UISetVisible(&DEV9ReportMenu, DEV9_ID_SPEED_CAPS_LBL, DeviceConnected);
 	UISetVisible(&DEV9ReportMenu, DEV9_ID_SPEED_CAPS, DeviceConnected);
+	UISetVisible(&DEV9ReportMenu, DEV9_ID_SPEED_CAPS_SEP, DeviceConnected);
+	UISetVisible(&DEV9ReportMenu, DEV9_ID_SPEED_REV8, DeviceConnected);
 	UISetVisible(&DEV9ReportMenu, DEV9_ID_SPEED_CAPS_DESC, DeviceConnected);
 	UISetVisible(&DEV9ReportMenu, DEV9_ID_MAC_ADDR_LBL, DeviceConnected);
 	UISetVisible(&DEV9ReportMenu, DEV9_ID_MAC_ADDR_00, DeviceConnected);
@@ -1116,9 +1245,9 @@ void RedrawLoadingScreen(unsigned int frame)
 	}
 }
 
-int DumpSystemROM(const char *path, const struct SystemInformation *SystemInformation){
+static int DumpSystemROM(const char *path, const struct SystemInformation *SystemInformation){
 	char *filename;
-	unsigned int PathLength, ModelNameLen, ROMVerLen, SerialNumber;
+	unsigned int PathLength, ModelNameLen, ROMVerLen;
 	int result, PadStatus;
 	FILE *logfile;
 	struct DumpingStatus DumpingStatus[DUMP_REGION_COUNT];
@@ -1131,13 +1260,15 @@ int DumpSystemROM(const char *path, const struct SystemInformation *SystemInform
 	ModelNameLen=strlen(SystemInformation->mainboard.ModelName);
 	ROMVerLen=strlen(SystemInformation->mainboard.romver);
 
-	SerialNumber=((unsigned int)SystemInformation->ConsoleID[6])<<16 | ((unsigned int)SystemInformation->ConsoleID[5])<<8 | ((unsigned int)SystemInformation->ConsoleID[4]);
-
 	filename=malloc(PathLength+ModelNameLen+32);
 	if(SystemInformation->mainboard.BOOT_ROM.IsExists){
 		DEBUG_PRINTF("Dumping Boot ROM at %p, %u bytes...", SystemInformation->mainboard.BOOT_ROM.StartAddress, SystemInformation->mainboard.BOOT_ROM.size);
 
-		sprintf(filename, "%s/%s_%07u_BOOT_ROM.bin", path, SystemInformation->mainboard.ModelName, SerialNumber);
+#ifndef DSNET_HOST_SUPPORT
+		sprintf(filename, "%s/%s_BOOT_ROM.bin", path, SystemInformation->mainboard.ModelName);
+#else
+		sprintf(filename, "%s%s_BOOT_ROM.bin", path, SystemInformation->mainboard.ModelName);
+#endif
 		if((result=DumpRom(filename, SystemInformation, DumpingStatus, DUMP_REGION_BOOT_ROM))==0){
 			DEBUG_PRINTF("done!\n");
 		}
@@ -1149,7 +1280,11 @@ int DumpSystemROM(const char *path, const struct SystemInformation *SystemInform
 	if(SystemInformation->mainboard.DVD_ROM.IsExists){
 		DEBUG_PRINTF("Dumping DVD ROM at %p, %u bytes...", SystemInformation->mainboard.DVD_ROM.StartAddress, SystemInformation->mainboard.DVD_ROM.size);
 
-		sprintf(filename, "%s/%s_%07u_DVD_ROM.bin", path, SystemInformation->mainboard.ModelName, SerialNumber);
+#ifndef DSNET_HOST_SUPPORT
+		sprintf(filename, "%s/%s_DVD_ROM.bin", path, SystemInformation->mainboard.ModelName);
+#else
+		sprintf(filename, "%s%s_DVD_ROM.bin", path, SystemInformation->mainboard.ModelName);
+#endif
 		if((result=DumpRom(filename, SystemInformation, DumpingStatus, DUMP_REGION_DVD_ROM))==0){
 			DEBUG_PRINTF("done!\n");
 		}
@@ -1158,7 +1293,11 @@ int DumpSystemROM(const char *path, const struct SystemInformation *SystemInform
 		}
 	}
 
-	sprintf(filename, "%s/%s_%07u_NVM.bin", path, SystemInformation->mainboard.ModelName, SerialNumber);
+#ifndef DSNET_HOST_SUPPORT
+	sprintf(filename, "%s/%s_NVM.bin", path, SystemInformation->mainboard.ModelName);
+#else
+	sprintf(filename, "%s%s_NVM.bin", path, SystemInformation->mainboard.ModelName);
+#endif
 	if((result=DumpMECHACON_EEPROM(filename))==0){
 		DumpingStatus[DUMP_REGION_EEPROM].progress=1.00f;
 		DumpingStatus[DUMP_REGION_EEPROM].status=1;
@@ -1167,7 +1306,11 @@ int DumpSystemROM(const char *path, const struct SystemInformation *SystemInform
 
 	RedrawDumpingScreen(SystemInformation, DumpingStatus);
 
-	sprintf(filename, "%s/%s_%07u_specs.txt", path, SystemInformation->mainboard.ModelName, SerialNumber);
+#ifndef DSNET_HOST_SUPPORT
+	sprintf(filename, "%s/%s_specs.txt", path, SystemInformation->mainboard.ModelName);
+#else
+	sprintf(filename, "%s%s_specs.txt", path, SystemInformation->mainboard.ModelName);
+#endif
 	if((logfile=fopen(filename, "wb"))!=NULL){
 		WriteSystemInformation(logfile, SystemInformation);
 		fclose(logfile);
@@ -1175,7 +1318,11 @@ int DumpSystemROM(const char *path, const struct SystemInformation *SystemInform
 
 	//If the mainboard model is not recognized, write a new database record file to the disk.
 	if(PS2IDBMS_LookupMainboardModel(&SystemInformation->mainboard)==NULL){
-		sprintf(filename, "%s/%s_%07u_database.bin", path, SystemInformation->mainboard.ModelName, SerialNumber);
+#ifndef DSNET_HOST_SUPPORT
+		sprintf(filename, "%s/%s_database.bin", path, SystemInformation->mainboard.ModelName);
+#else
+		sprintf(filename, "%s%s_database.bin", path, SystemInformation->mainboard.ModelName);
+#endif
 		WriteNewMainboardDBRecord(filename, &SystemInformation->mainboard);
 	}
 

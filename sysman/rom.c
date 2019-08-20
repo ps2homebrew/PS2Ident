@@ -10,8 +10,8 @@
 #include "main.h"
 #include "sysinfo.h"
 #include "sysman_rpc.h"
+#include "romdrv.h"
 #include "rom.h"
-#include "romimg.h"
 
 static int EROMInitialize(void);
 static int EROMGetHardwareInfo(t_PS2DBROMHardwareInfo *devinfo);
@@ -24,20 +24,6 @@ int ROMInitialize(void){
 	return 0;
 }
 
-static int IsROMDIRExists(const char *path){
-	int fd, result;
-
-	if((fd = open(path, O_RDONLY)) >= 0)
-	{
-		close(fd);
-		result = 1;
-	}else{
-		result = 0;
-	}
-
-	return result;
-}
-
 static int GetSizeFromDelay(int device)
 {
 	int size = (GetDelay(device) >> 16) & 0x1F;
@@ -45,36 +31,39 @@ static int GetSizeFromDelay(int device)
 	return(1 << size);
 }
 
-static void *GetIOPRPStat(const void *start, const void *end, struct RomImgData *ImageStat)
+static struct RomImg *romGetImageStat(const void *start, const void *end, struct RomImg *ImageStat)
 {
-	const u32 *ptr;
+	const u32* ptr;
 	unsigned int offset;
+	const struct RomDirEntry *file;
+	u32 size;
 
-	ptr=start;
-	offset=0;
-	while((u8*)ptr<(u8*)end)
+	offset = 0;
+	file = (struct RomDirEntry*)start;
+	for( ; file < (const struct RomDirEntry*)end; file++,offset+=sizeof(struct RomDirEntry))
 	{
-		// Scan for RESET\0\0\0\0\0. The record should have a filesize of equal to its offset from the start of the image.
-		if(ptr[0]==0x45534552 && ptr[1]==0x54 && (*(unsigned short int*)&ptr[2]==0) && (((ptr[3]+0xF)&0xFFFFFFF0)==offset))
+		/* Check for a valid ROM filesystem (Magic: "RESET\0\0\0\0\0"). Must have the right magic and bootstrap code size (size of RESET = bootstrap code size). */
+		ptr = (u32*)file->name;
+		if(ptr[0]==0x45534552 && ptr[1]==0x54 && (*(u16*)&ptr[2]==0) && (((file->size+15) & ~15) == offset))
 		{
-			ImageStat->ImageStart=start;
-			ImageStat->RomdirStart=ptr;
-			ImageStat->RomdirEnd=(void*)((u8*)ptr+ptr[7]);
+			ImageStat->ImageStart = start;
+			ImageStat->RomdirStart = ptr;
+			size = file[1].size;	//Get size of image from ROMDIR (after RESET).
+			ImageStat->RomdirEnd = (const void*)((const u8*)ptr + size);
 			return ImageStat;
 		}
-
-		offset+=sizeof(struct RomDirEntry);
-		ptr+=4;
 	}
 
 	ImageStat->ImageStart=0;
 	return NULL;
 }
 
-int ROMGetHardwareInfo(t_SysmanHardwareInfo *hwinfo){
+int ROMGetHardwareInfo(t_SysmanHardwareInfo *hwinfo)
+{
 	int result;
 	unsigned int i, size;
-	struct RomImgData ImgStat;
+	struct RomImg ImgStat;
+	const struct RomImg *pImgStat;
 
 	//Determine the sizes of the boot ROM and DVD ROM chips.
 	//DEV2, BOOT ROM
@@ -90,7 +79,7 @@ int ROMGetHardwareInfo(t_SysmanHardwareInfo *hwinfo){
 	hwinfo->DVD_ROM.StartAddress = GetBaseAddress(SSBUSC_DEV_DVDROM);
 	hwinfo->DVD_ROM.crc16 = 0;
 	hwinfo->DVD_ROM.size = GetSizeFromDelay(SSBUSC_DEV_DVDROM);
-	hwinfo->DVD_ROM.IsExists = GetIOPRPStat((const void*)hwinfo->DVD_ROM.StartAddress, (const void*)(hwinfo->DVD_ROM.StartAddress + 0x4000), &ImgStat) != NULL;
+	hwinfo->DVD_ROM.IsExists = romGetImageStat((const void*)hwinfo->DVD_ROM.StartAddress, (const void*)(hwinfo->DVD_ROM.StartAddress + 0x4000), &ImgStat) != NULL;
 
 	if(hwinfo->DVD_ROM.size > 0)
 		printf("DEV1: 0x%lx-0x%lx\n", hwinfo->DVD_ROM.StartAddress, hwinfo->DVD_ROM.StartAddress+hwinfo->DVD_ROM.size-1);
@@ -98,51 +87,72 @@ int ROMGetHardwareInfo(t_SysmanHardwareInfo *hwinfo){
 	//Process virtual directories
 	//DEV2, BOOT ROM
 	//rom0
-	hwinfo->ROMs[0].StartAddress = KSEG1ADDR(hwinfo->BOOT_ROM.StartAddress);
-	hwinfo->ROMs[0].crc16 = 0;
+	pImgStat = romGetDevice(0);
+	if(pImgStat != NULL)
+	{
+		hwinfo->ROMs[0].IsExists = 1;
+		hwinfo->ROMs[0].StartAddress = (u32)pImgStat->ImageStart;
+		hwinfo->ROMs[0].size = 0;
+		hwinfo->ROMs[0].crc16 = 0;
+	} else {
+		hwinfo->ROMs[0].IsExists = 0;
+		hwinfo->ROMs[0].StartAddress = 0;
+		hwinfo->ROMs[0].size = 0;
+		hwinfo->ROMs[0].crc16 = 0;
+	}
 
 	//DEV1, DVD ROM
 	/*	The DVD ROM contains the rom1, rom2 and erom regions, and these regions exist in this order within the DVD ROM chip.
 		The rom2 region only exists on Chinese consoles.
 		TOOL consoles have DEV1 installed, but it contains no filesystem and contains hardware IDs instead.	*/
 	//rom1 (part of DEV1)
-	hwinfo->ROMs[1].StartAddress = KSEG1ADDR(hwinfo->DVD_ROM.StartAddress);
-	hwinfo->ROMs[1].crc16=0;
+	pImgStat = romGetDevice(1);
+	if(pImgStat != NULL)
+	{
+		hwinfo->ROMs[1].IsExists = 1;
+		hwinfo->ROMs[1].StartAddress = (u32)pImgStat->ImageStart;
+		hwinfo->ROMs[1].size = 0;
+		hwinfo->ROMs[1].crc16 = 0;
+	} else {
+		hwinfo->ROMs[1].IsExists = 0;
+		hwinfo->ROMs[1].StartAddress = 0;
+		hwinfo->ROMs[1].size = 0;
+		hwinfo->ROMs[1].crc16 = 0;
+	}
+
 	//rom2 (part of DEV1)
-	hwinfo->ROMs[2].StartAddress = hwinfo->ROMs[1].StartAddress + 0x00400000;
-	hwinfo->ROMs[2].crc16=0;
+	pImgStat = romGetDevice(2);
+	if(pImgStat != NULL)
+	{
+		hwinfo->ROMs[2].IsExists = 1;
+		hwinfo->ROMs[2].StartAddress = (u32)pImgStat->ImageStart;
+		hwinfo->ROMs[2].size = 0;
+		hwinfo->ROMs[2].crc16 = 0;
+	} else {
+		hwinfo->ROMs[2].IsExists = 0;
+		hwinfo->ROMs[2].StartAddress = 0;
+		hwinfo->ROMs[2].size = 0;
+		hwinfo->ROMs[2].crc16 = 0;
+	}
 
-	hwinfo->ROMs[0].IsExists=IsROMDIRExists("rom0:ROMDIR");
-
-	if((hwinfo->ROMs[1].IsExists=IsROMDIRExists("rom1:ROMDIR"))){
-		hwinfo->ROMs[2].IsExists = (hwinfo->DVD_ROM.size > 0x00400000 && IsROMDIRExists("rom2:ROMDIR"));
-
+	if(hwinfo->ROMs[1].IsExists)
+	{	//If rom1 exists, erom may exist.
 		EROMGetHardwareInfo(&hwinfo->erom);
 	}
-	else{
-		hwinfo->ROMs[2].IsExists=0;	//erom and rom2 cannot exist if rom1 doesn't exist.
+	else
+	{	//erom cannot exist if rom1 (hence EROMDRV) doesn't exist.
 		hwinfo->erom.IsExists=0;
 	}
 
-	for(i=0; i<=2; i++){
-		if(hwinfo->ROMs[i].IsExists){
-			if((result=SysmanCalcROMRegionSize((void*)hwinfo->ROMs[i].StartAddress))>0){
+	for(i=0; i<=2; i++)
+	{
+		if(hwinfo->ROMs[i].IsExists)
+		{
+			if((result=SysmanCalcROMRegionSize((void*)hwinfo->ROMs[i].StartAddress)) > 0)
+			{
 				printf("rom%u:\t%u bytes\n", i, result);
-				hwinfo->ROMs[i].size=result;	
+				hwinfo->ROMs[i].size = result;
 			}
-			else hwinfo->ROMs[i].IsExists=0;
-		}
-	}
-
-	/* Check whether rom2 is a mirror of rom1 (Happens when the DVD ROM chip does not have rom2).
-	   Although the check above should have already accurately determined whether rom2 exists or not
-	   (If there's ADDROM2 and there's a DVD ROM chip, rom2 should exist).	*/
-	if(hwinfo->ROMs[1].IsExists && hwinfo->ROMs[2].IsExists && (hwinfo->ROMs[1].size==hwinfo->ROMs[2].size)){
-		printf("Checking if rom2 is a mirror of rom1.\n");
-
-		if(!memcmp((const void*)hwinfo->ROMs[1].StartAddress, (const void*)hwinfo->ROMs[2].StartAddress, hwinfo->ROMs[1].size)){
-			printf("rom2 is a mirror of rom1.\n");
-			memset(&hwinfo->ROMs[2], 0, sizeof(hwinfo->ROMs[2]));
 		}
 	}
 

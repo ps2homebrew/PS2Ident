@@ -7,8 +7,11 @@
 
 int FontInit(struct UIDrawGlobal *gsGlobal, const char *FontFile);
 int FontInitWithBuffer(struct UIDrawGlobal *gsGlobal, void *buffer, unsigned int size);
+int AddSubFont(struct UIDrawGlobal *gsGlobal, const char *FontFile);
+int AddSubFontWithBuffer(struct UIDrawGlobal *gsGlobal, void *buffer, unsigned int size);
 void FontDeinit(void);
 int FontReset(struct UIDrawGlobal *gsGlobal);	//Performs a partial re-initialization of the Font library and re-allocates VRAM. Used when VRAM has been cleared.
 void FontPrintfWithFeedback(struct UIDrawGlobal *gsGlobal, short int x, short int y, short int z, float scale, GS_RGBAQ colour, const char *string, short int *xRel, short int *yRel);
 void FontPrintf(struct UIDrawGlobal *gsGlobal, short int x, short int y, short int z, float scale, GS_RGBAQ colour, const char *string);
-int FontGetGlyphWidth(wint_t character);
+int FontGetGlyphWidth(struct UIDrawGlobal *gsGlobal, wint_t character);
+

@@ -12,4 +12,3 @@ struct ProgressBarCoords{
 
 void RedrawDumpingScreen(const struct SystemInformation *SystemInformation, const struct DumpingStatus *DumpingStatus);
 void RedrawLoadingScreen(unsigned int frame);
-int DumpSystemROM(const char *path, const struct SystemInformation *SystemInformation);

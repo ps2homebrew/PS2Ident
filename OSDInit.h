@@ -39,8 +39,8 @@ typedef struct {
 /*04*/u32 language:5;
 	/** Timezone minutes offset from GMT */
 /*09*/u32 timezoneOffset:11;
-	/** ??? */
-/*20*/u32 unknown20:9;
+	/** Timezone ID */
+/*20*/u32 timezone:9;
 	/** 0=standard(winter), 1=daylight savings(summer) */
 /*29*/u32 daylightSaving:1;
 	/** 0=24 hour, 1=12 hour */
@@ -48,14 +48,14 @@ typedef struct {
 
 	/** 0=YYYYMMDD, 1=MMDDYYYY, 2=DDMMYYYY */
 /*00*/u32 dateFormat:2;
-	/** ??? */
-/*02*/u32 unknown02:1;
-	/** ??? */
-/*03*/u32 unknown03:1;
-	/** ??? */
-/*04*/u32 unknown04:1;
-	/** ??? */
-/*05*/u32 unknown05:1;
+	/** Remote Control On/Off option */
+/*02*/u32 rcEnabled:1;
+	/** Remote Control Game Function On/Off */
+/*03*/u32 rcGameFunction:1;
+	/** Whether the Remote Control is supported by the PlayStation 2. */
+/*04*/u32 rcSupported:1;
+	/** Whether the DVD player should have progressive scanning enabled. */
+/*05*/u32 dvdpProgressive:1;
 } OSDConfig2_t;
 
 typedef struct {
@@ -86,7 +86,7 @@ typedef struct {
 
 			//0x10
 			u8 language:5;
-			u8 unknown2:3;
+			u8 version:3;
 
 			//0x11
 			u8 timezoneOffsetHi:3;
@@ -99,15 +99,15 @@ typedef struct {
 			u8 timezoneOffsetLo;
 
 			//0x13
-			u8 unknownB14Hi:1;
-			u8 unknownB13_01:3;
-			u8 unknownB13_04:1;
-			u8 unknownB13_05:1;
-			u8 unknownB13_06:1;
-			u8 unknownB13_07:1;
+			u8 timezoneHi:1;
+			u8 unknownB13_01:3;	//Value is carried over
+			u8 dvdpProgressive:1;
+			u8 rcSupported:1;
+			u8 rcGameFunction:1;
+			u8 rcEnabled:1;
 
 			//0x14
-			u8 unknownB14Lo;
+			u8 timezoneLo;
 
 			//0x15-0x1E
 			u8 unusedBytes[9];

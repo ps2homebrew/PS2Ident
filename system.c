@@ -21,6 +21,9 @@ int GetBootDeviceID(void)
 		if(!strncmp(path, "mc0:", 4)) result=BOOT_DEVICE_MC0;
 		else if(!strncmp(path, "mc1:", 4)) result=BOOT_DEVICE_MC1;
 		else if(!strncmp(path, "mass:", 5) || !strncmp(path, "mass0:", 6)) result=BOOT_DEVICE_MASS;
+#ifdef DSNET_HOST_SUPPORT
+		else if(!strncmp(path, "host:", 5) || !strncmp(path, "host0:", 5)) result=BOOT_DEVICE_HOST;
+#endif
 		else result=BOOT_DEVICE_UNKNOWN;
 
 		BootDevice = result;

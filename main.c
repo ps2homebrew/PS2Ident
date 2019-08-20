@@ -1,6 +1,8 @@
 #include <kernel.h>
 #include <libcdvd.h>
 #include <iopheap.h>
+#include <iopcontrol.h>
+#include <iopcontrol_special.h>
 #include <errno.h>
 #include <sifrpc.h>
 #include <loadfile.h>
@@ -61,44 +63,24 @@ extern unsigned int size_USBHDFSDFSV_irx;
 extern unsigned char SYSMAN_irx[];
 extern unsigned int size_SYSMAN_irx;
 
+extern unsigned char IOPRP_img[];
+extern unsigned int size_IOPRP_img;
+
 extern void *_gp;
 static unsigned char ConsoleRegionData[13];
 
-static inline int InitMGRegion(void){
-	int result, status;
-	static int ConsoleRegionParamInitStatus=0;
-
-	/*	There's a nice RPC function provided by XCDVDFSV and XCDVDMAN, but the protokernel consoles lack them.
-			Even if they don't need this command to be run at startup, the difference in alignment structures in the CDVDFSV versions makes mixing the modules and EE client libraries a bad idea. */
-	if(ConsoleRegionParamInitStatus==0){
-		do{
-			if((result=sceCdAltReadRegionParams(ConsoleRegionData, &status))==0) ConsoleRegionParamInitStatus=1;
-			else{
-				if(status&0x100){
-					ConsoleRegionParamInitStatus=-1;
-					break;
-				}
-				else ConsoleRegionParamInitStatus=1;
-			}
-		}while((result==0) || (status&0x80));
-	}
-
-	return ConsoleRegionParamInitStatus;
-}
-
-static inline int LoadEROMDRV(void){
-	char MGRegion, path[14];
+static int LoadEROMDRV(void)
+{
+	char eromdrv[] = "rom1:EROMDRV?";
 	int result;
 
-	if(InitMGRegion()>=0){
-		sprintf(path, "rom1:EROMDRV%c", ConsoleRegionData[8]);
-		result=SifLoadModuleEncrypted(path, 0, NULL);
-	}
-	else{
-		result=SifLoadModuleEncrypted("rom1:EROMDRV", 0, NULL);
+	//Handle region-specific DVD Player of newer consoles.
+	if(OSDGetDVDPlayerRegion(&eromdrv[12]) == 0 || eromdrv[12] != '\0')
+	{
+		eromdrv[12] = '\0';	//Replace '?' with a NULL.
 	}
 
-	return result;
+	return SifLoadModuleEncrypted(eromdrv, 0, NULL);
 }
 
 #define SYSTEM_INIT_THREAD_STACK_SIZE	0x800
@@ -108,7 +90,8 @@ struct SystemInitParams{
 	int InitCompleteSema;
 };
 
-static void SystemInitThread(struct SystemInitParams *SystemInitParams){
+static void SystemInitThread(struct SystemInitParams *SystemInitParams)
+{
 	GetRomName(SystemInitParams->SystemInformation->mainboard.romver);
 
 	SifExecModuleBuffer(MCSERV_irx, size_MCSERV_irx, 0, NULL, NULL);
@@ -119,6 +102,14 @@ static void SystemInitThread(struct SystemInitParams *SystemInitParams){
 
 	SifLoadModule("rom0:ADDDRV", 0, NULL);
 	SifLoadModule("rom0:ADDROM2", 0, NULL);
+
+	//Initialize PlayStation Driver (PS1DRV)
+	PS1DRVInit();
+
+	//Initialize ROM DVD player.
+	//It is normal for this to fail on consoles that have no DVD ROM chip (i.e. DEX or the SCPH-10000/SCPH-15000).
+	DVDPlayerInit();
+
 	LoadEROMDRV();
 
 	/* Must be loaded last, after all devices have been initialized. */
@@ -163,9 +154,7 @@ int main(int argc, char *argv[]){
 	}
 
 	SifInitRpc(0);
-#ifndef DEBUG
-	while(!SifIopReset("rom0:UDNL", 0)){};
-#endif
+	while(!SifIopRebootBuffer(IOPRP_img, size_IOPRP_img)){};
 
 	memset(&SystemInformation, 0, sizeof(SystemInformation));
 
@@ -211,23 +200,13 @@ int main(int argc, char *argv[]){
 	SifExecModuleBuffer(USBHDFSDFSV_irx, size_USBHDFSDFSV_irx, 0, NULL, NULL);
 
 	sceCdInit(SCECdINoD);
-	InitLibcdvd_addOnFunctions();
+	cdInitAdd();
 
 	//Initialize system paths.
 	OSDInitSystemPaths();
 
 	//Initialize ROM version (must be done first).
 	OSDInitROMVER();
-
-	//Initialize model name
-	ModelNameInit();
-
-	//Initialize PlayStation Driver (PS1DRV)
-	PS1DRVInit();
-
-	//Initialize ROM DVD player.
-	//It is normal for this to fail on consoles that have no DVD ROM chip (i.e. DEX or the SCPH-10000/SCPH-15000).
-	DVDPlayerInit();
 
 	if(InitializeUI(0)!=0){
 		SifExitRpc();
@@ -240,8 +219,7 @@ int main(int argc, char *argv[]){
 
 	DEBUG_PRINTF("Initializing hardware...");
 
-	ChangeThreadPriority(GetThreadId(), 32);
-	SysCreateThread(&SystemInitThread, SysInitThreadStack, SYSTEM_INIT_THREAD_STACK_SIZE, &InitThreadParams, 0x1);
+	SysCreateThread(&SystemInitThread, SysInitThreadStack, SYSTEM_INIT_THREAD_STACK_SIZE, &InitThreadParams, 0x2);
 
 	FrameNum=0;
 	while(PollSema(SystemInitSema)!=SystemInitSema){

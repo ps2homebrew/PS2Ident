@@ -11,8 +11,8 @@
 #include <sysmem.h>
 
 #include "main.h"
-#include "romimg.h"
 #include "sysinfo.h"
+#include "romdrv.h"
 #include "rom.h"
 #include "iLink.h"
 #include "dev9.h"
@@ -22,7 +22,7 @@
 #include "sysman_rpc.h"
 
 #define MODNAME "System_Manager"
-IRX_ID(MODNAME, 0x01, 0x02);
+IRX_ID(MODNAME, 1, 3);
 
 /* Data used for registering the RPC servers */
 static SifRpcServerData_t rpc_sdata;

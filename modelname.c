@@ -58,7 +58,7 @@ static int ReadModelName(char *name)
 		return 0;	//Original returned -1
 	}
 	else{
-		if((result = sceCdAltRM(name, &stat)) != 1)
+		if((result = sceCdAltRM(name, &stat)) == 1)
 		{
 			if(stat & 0x80)
 				return -2;

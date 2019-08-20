@@ -14,6 +14,7 @@
 #include <intrman.h>
 #include <ioman.h>
 #include <loadcore.h>
+#include <romdrv.h>
 #include <sifcmd.h>
 #include <sifman.h>
 #include <stdio.h>

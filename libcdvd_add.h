@@ -1,5 +1,5 @@
-int InitLibcdvd_addOnFunctions(void);
-int sceCdAltReadRegionParams(unsigned char *data, int *status);
-int sceCdAltMV(unsigned char *buffer, int *status);
-int sceCdAltRM(char *ModelName, int *stat);
-int sceCdAltReadRenewalDate(void *buffer, int *stat);
+int cdInitAdd(void);
+int sceCdAltReadRegionParams(u8 *data, u32 *stat);
+int sceCdAltMV(u8 *buffer, u32 *status);
+int sceCdAltRM(char *ModelName, u32 *stat);
+int sceCdAltReadRenewalDate(void *buffer, u32 *stat);

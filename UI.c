@@ -125,7 +125,7 @@ static void BreakLongLanguageString(char *str)
 
 		if (wchar != '\n')
 		{
-			width = FontGetGlyphWidth(wchar);
+			width = FontGetGlyphWidth(&UIDrawGlobal, wchar);
 
 			// To wrap long lines, replace the last whitespace with a newline character
 			if(ScreenLineLenPx + width >= LineMaxPx)
@@ -490,7 +490,7 @@ static int LoadFontIntoBuffer(struct UIDrawGlobal *gsGlobal, const char *path)
 		size = ftell(file);
 		rewind(file);
 
-		if((buffer = malloc(size)) != NULL)
+		if((buffer = memalign(64, size)) != NULL)
 		{
 			if(fread(buffer, 1, size, file) == size)
 			{
@@ -1407,7 +1407,7 @@ int UIExecMenu(struct UIMenu *FirstMenu, short int SelectedItem, struct UIMenu *
 						if(item->enumeration.selectedIndex > 0)
 							item->enumeration.selectedIndex--;
 						else
-							item->enumeration.selectedIndex = item->enumeration.count;
+							item->enumeration.selectedIndex = item->enumeration.count - 1;
 						break;
 				}
 			}
