@@ -11,7 +11,7 @@ EE_OBJS = main.o system.o UI.o menu.o ident.o dbms.o SYSMAN_rpc.o graphics.o fon
 
 EE_INCS := -I$(PS2SDK)/ee/include -I$(PS2SDK)/ports/include/freetype2 -I$(PS2SDK)/common/include -I. -I$(PS2SDK)/ports/include
 EE_LDFLAGS :=  -L$(PS2SDK)/ee/lib -L$(PS2SDK)/ports/lib -s
-EE_LIBS := -lgs -lpng -lzlib -lcdvd -lmc -lpadx -lpatches -liopreboot -lfreetype -lm
+EE_LIBS := -lgs -lpng -lz -lcdvd -lmc -lpadx -lpatches -liopreboot -lfreetype -lm
 EE_GPVAL = -G383
 EE_CFLAGS += -D_EE -O2 -mgpopt $(EE_GPVAL)
 
