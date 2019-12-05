@@ -146,6 +146,7 @@ int SysmanGetHardwareInfo(t_SysmanHardwareInfo *hwinfo){
 	hwinfo->MPUBoardID=*(volatile unsigned short int *)0xBF803800;
 	hwinfo->ROMGEN_MonthDate=*(volatile unsigned short int *)0xBFC00100;
 	hwinfo->ROMGEN_Year=*(volatile unsigned short int *)0xBFC00102;
+	hwinfo->EEDetailed=*(volatile unsigned int *)0xB000F520;
 
 	if((result=ROMGetHardwareInfo(hwinfo))==0){
 		if((result=dev9GetHardwareInfo(&hwinfo->ssbus))==0){

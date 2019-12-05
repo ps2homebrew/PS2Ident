@@ -724,10 +724,11 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
 			"\tMachine type:\t\t0x%08x\r\n"
 			"\tBoardInf:\t\t0x%02x (%s)\r\n"
 			"\tMPU Board ID:\t\t0x%04x\r\n"
+			"\tEE Detailed:\t\t0x%04x\r\n"
 			"\tSPU2 revision:\t\t0x%02x (%s)\r\n",
 						SystemInformation->mainboard.MainboardName, SystemInformation->chassis,
 						SystemInformation->mainboard.ROMGEN_MonthDate, SystemInformation->mainboard.ROMGEN_Year, SystemInformation->mainboard.MachineType,
-						SystemInformation->mainboard.BoardInf, GetMRPDesc(SystemInformation->mainboard.BoardInf), SystemInformation->mainboard.MPUBoardID,
+						SystemInformation->mainboard.BoardInf, GetMRPDesc(SystemInformation->mainboard.BoardInf), SystemInformation->mainboard.MPUBoardID, hwinfo->EEDetailed,
 						SystemInformation->mainboard.spu2.revision, GetSPU2ChipDesc(SystemInformation->mainboard.spu2.revision));
 
 	if(!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MVER))
