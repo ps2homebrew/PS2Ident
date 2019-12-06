@@ -112,6 +112,9 @@ struct PS2IDBMainboardEntry{
 	u16 ADD010;
 	s8 ContributorName[16];
 	u16 padding;
+	u32 EE_F520;
+	u32 EE_F540;
+	u32 EE_F550;
 };
 
 #define PS2IDB_FORMAT_VERSION	0x0113

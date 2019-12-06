@@ -15,5 +15,7 @@ typedef struct SysmanHardwareInfo{
 	unsigned short int ROMGEN_Year;
 	unsigned short int BoardInf;
 	unsigned short int MPUBoardID;
-	unsigned int EEDetailed;
+	unsigned int EE_F520;
+	unsigned int EE_F540;
+	unsigned int EE_F550;
 } t_SysmanHardwareInfo;

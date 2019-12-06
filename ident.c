@@ -131,6 +131,9 @@ int GetPeripheralInformation(struct SystemInformation *SystemInformation){
 	SystemInformation->mainboard.BoardInf=hwinfo.BoardInf;
 	SystemInformation->mainboard.MPUBoardID=hwinfo.MPUBoardID;
 	SystemInformation->mainboard.ROMGEN_MonthDate=hwinfo.ROMGEN_MonthDate;
+	SystemInformation->mainboard.EE_F520=hwinfo.EE_F520;
+	SystemInformation->mainboard.EE_F540=hwinfo.EE_F540;
+	SystemInformation->mainboard.EE_F550=hwinfo.EE_F550;
 	SystemInformation->mainboard.ROMGEN_Year=hwinfo.ROMGEN_Year;
 	SystemInformation->mainboard.status = 0;
 
@@ -692,10 +695,12 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
 		"\tFPU revision:\t\t%u.%u\r\n"
 		"\tICache size:\t\t0x%02x (%u KB)\r\n"
 		"\tDCache size:\t\t0x%02x (%u KB)\r\n"
-		"\tRAM size:\t\t%u bytes\r\n", SystemInformation->mainboard.ee.implementation, SystemInformation->mainboard.ee.revision>>4, SystemInformation->mainboard.ee.revision&0xF, GetEEChipDesc((unsigned short int)(SystemInformation->mainboard.ee.implementation)<<8|SystemInformation->mainboard.ee.revision), SystemInformation->mainboard.ee.FPUImplementation, SystemInformation->mainboard.ee.FPURevision>>4, SystemInformation->mainboard.ee.FPURevision&0xF,
-						SystemInformation->mainboard.ee.ICacheSize, CalculateCPUCacheSize(SystemInformation->mainboard.ee.ICacheSize)/1024,
-						SystemInformation->mainboard.ee.DCacheSize, CalculateCPUCacheSize(SystemInformation->mainboard.ee.DCacheSize)/1024,
-						SystemInformation->mainboard.ee.RAMSize);
+		"\tRAM size:\t\t%u bytes\r\n"
+		"\tEE_F520:\t\t0x%08x,EE_EF540: 0x%08x, EE_EF550: 0x%08x\r\n", SystemInformation->mainboard.ee.implementation, SystemInformation->mainboard.ee.revision>>4, SystemInformation->mainboard.ee.revision&0xF, GetEEChipDesc((unsigned short int)(SystemInformation->mainboard.ee.implementation)<<8|SystemInformation->mainboard.ee.revision), SystemInformation->mainboard.ee.FPUImplementation, SystemInformation->mainboard.ee.FPURevision>>4, SystemInformation->mainboard.ee.FPURevision&0xF,
+		SystemInformation->mainboard.ee.ICacheSize, CalculateCPUCacheSize(SystemInformation->mainboard.ee.ICacheSize)/1024,
+		SystemInformation->mainboard.ee.DCacheSize, CalculateCPUCacheSize(SystemInformation->mainboard.ee.DCacheSize)/1024,
+		SystemInformation->mainboard.ee.RAMSize,
+		SystemInformation->mainboard.EE_F520,SystemInformation->mainboard.EE_F540,SystemInformation->mainboard.EE_F550);
 
 	fprintf(stream, "IOP:\r\n"
 		"\tRevision:\t\t0x%04x (%s)\r\n"
@@ -724,11 +729,10 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
 			"\tMachine type:\t\t0x%08x\r\n"
 			"\tBoardInf:\t\t0x%02x (%s)\r\n"
 			"\tMPU Board ID:\t\t0x%04x\r\n"
-			"\tEE Detailed:\t\t0x%04x\r\n"
 			"\tSPU2 revision:\t\t0x%02x (%s)\r\n",
 						SystemInformation->mainboard.MainboardName, SystemInformation->chassis,
 						SystemInformation->mainboard.ROMGEN_MonthDate, SystemInformation->mainboard.ROMGEN_Year, SystemInformation->mainboard.MachineType,
-						SystemInformation->mainboard.BoardInf, GetMRPDesc(SystemInformation->mainboard.BoardInf), SystemInformation->mainboard.MPUBoardID, hwinfo->EEDetailed,
+						SystemInformation->mainboard.BoardInf, GetMRPDesc(SystemInformation->mainboard.BoardInf), SystemInformation->mainboard.MPUBoardID,
 						SystemInformation->mainboard.spu2.revision, GetSPU2ChipDesc(SystemInformation->mainboard.spu2.revision));
 
 	if(!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MVER))
