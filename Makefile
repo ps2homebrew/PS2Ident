@@ -2,6 +2,7 @@
 DSNET_HOST_SUPPORT = 0
 
 EE_BIN = PS2Ident.elf
+EE_PACKED_BIN = PS2Ident_packed.elf
 
 #IOP modules
 EE_IOP_OBJS = SIO2MAN_irx.o MCMAN_irx.o MCSERV_irx.o PADMAN_irx.o POWEROFF_irx.o PS2DEV9_irx.o USBD_irx.o USBHDFSD_irx.o USBHDFSDFSV_irx.o SYSMAN_irx.o IOPRP_img.o
@@ -32,11 +33,15 @@ endif
 
 $(EE_BIN) : $(EE_OBJS)
 	$(EE_CC) $(EE_CFLAGS) $(EE_LDFLAGS) -o $(EE_BIN) $(EE_OBJS) $(EE_LIBS)
+	$(EE_STRIP) $(EE_BIN)
+	ps2-packer $(EE_BIN) $(EE_PACKED_BIN)
 
 all:
 	$(MAKE) $(EE_BIN)
 
 clean:
+	make clean -C sysman
+	make clean -C usbhdfsdfsv
 	rm -f $(EE_BIN) $(EE_BIN_REL) $(EE_OBJS) $(EE_TEMP_FILES)
 
 SIO2MAN_irx.c:
@@ -64,10 +69,14 @@ USBHDFSD_irx.c:
 	bin2c $(PS2SDK)/iop/irx/usbhdfsd.irx USBHDFSD_irx.c USBHDFSD_irx
 
 USBHDFSDFSV_irx.c:
-	bin2c irx/usbhdfsdfsv.irx USBHDFSDFSV_irx.c USBHDFSDFSV_irx
+	$(MAKE) -C usbhdfsdfsv
+	# bin2c irx/usbhdfsdfsv.irx USBHDFSDFSV_irx.c USBHDFSDFSV_irx
+	bin2c usbhdfsdfsv/usbhdfsdfsv.irx USBHDFSDFSV_irx.c USBHDFSDFSV_irx
 
 SYSMAN_irx.c:
-	bin2c irx/sysman.irx SYSMAN_irx.c SYSMAN_irx
+	$(MAKE) -C sysman
+	# bin2c irx/sysman.irx SYSMAN_irx.c SYSMAN_irx
+	bin2c sysman/sysman.irx SYSMAN_irx.c SYSMAN_irx
 
 background_img.c:
 	bin2c resources/background.png background_img.c background
