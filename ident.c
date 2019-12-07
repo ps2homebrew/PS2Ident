@@ -57,9 +57,16 @@ int GetEEInformation(struct SystemInformation *SystemInformation){
 	SystemInformation->mainboard.ee.DCacheSize=value>>6&3;
 	SystemInformation->mainboard.ee.RAMSize=GetMemorySize();
 	SystemInformation->mainboard.MachineType=MachineType();
+
 	revision=(*GS_REG_CSR)>>16;
 	SystemInformation->mainboard.gs.revision=revision&0xFF;
 	SystemInformation->mainboard.gs.id=revision>>8;
+
+	ee_kmode_enter();
+	SystemInformation->mainboard.ee.F520=*(volatile unsigned int *)0xB000F520;
+	SystemInformation->mainboard.ee.F540=*(volatile unsigned int *)0xB000F540;
+	SystemInformation->mainboard.ee.F550=*(volatile unsigned int *)0xB000F550;
+	ee_kmode_exit();
 
 	return 0;
 }
@@ -131,9 +138,6 @@ int GetPeripheralInformation(struct SystemInformation *SystemInformation){
 	SystemInformation->mainboard.BoardInf=hwinfo.BoardInf;
 	SystemInformation->mainboard.MPUBoardID=hwinfo.MPUBoardID;
 	SystemInformation->mainboard.ROMGEN_MonthDate=hwinfo.ROMGEN_MonthDate;
-	SystemInformation->mainboard.EE_F520=hwinfo.EE_F520;
-	SystemInformation->mainboard.EE_F540=hwinfo.EE_F540;
-	SystemInformation->mainboard.EE_F550=hwinfo.EE_F550;
 	SystemInformation->mainboard.ROMGEN_Year=hwinfo.ROMGEN_Year;
 	SystemInformation->mainboard.status = 0;
 
@@ -700,7 +704,7 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
 		SystemInformation->mainboard.ee.ICacheSize, CalculateCPUCacheSize(SystemInformation->mainboard.ee.ICacheSize)/1024,
 		SystemInformation->mainboard.ee.DCacheSize, CalculateCPUCacheSize(SystemInformation->mainboard.ee.DCacheSize)/1024,
 		SystemInformation->mainboard.ee.RAMSize,
-		SystemInformation->mainboard.EE_F520,SystemInformation->mainboard.EE_F540,SystemInformation->mainboard.EE_F550);
+		SystemInformation->mainboard.ee.F520,SystemInformation->mainboard.ee.F540,SystemInformation->mainboard.ee.F550);
 
 	fprintf(stream, "IOP:\r\n"
 		"\tRevision:\t\t0x%04x (%s)\r\n"

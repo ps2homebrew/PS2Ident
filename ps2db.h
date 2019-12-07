@@ -50,6 +50,9 @@ typedef struct PS2DBEEInformation{
 	u8 ICacheSize;
 	u8 DCacheSize;
 	u32 RAMSize;
+	u32 F520;
+	u32 F540;
+	u32 F550;
 } t_PS2DBEEHardwareInfo;
 
 typedef struct PS2DBSPU2HardwareInfo{
@@ -112,9 +115,6 @@ struct PS2IDBMainboardEntry{
 	u16 ADD010;
 	s8 ContributorName[16];
 	u16 padding;
-	u32 EE_F520;
-	u32 EE_F540;
-	u32 EE_F550;
 };
 
 #define PS2IDB_FORMAT_VERSION	0x0113

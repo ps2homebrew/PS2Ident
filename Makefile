@@ -33,7 +33,6 @@ endif
 
 $(EE_BIN) : $(EE_OBJS)
 	$(EE_CC) $(EE_CFLAGS) $(EE_LDFLAGS) -o $(EE_BIN) $(EE_OBJS) $(EE_LIBS)
-	$(EE_STRIP) $(EE_BIN)
 	ps2-packer $(EE_BIN) $(EE_PACKED_BIN)
 
 all:
