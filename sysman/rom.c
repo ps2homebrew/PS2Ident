@@ -79,6 +79,9 @@ int ROMGetHardwareInfo(t_SysmanHardwareInfo *hwinfo)
 	hwinfo->DVD_ROM.StartAddress = GetBaseAddress(SSBUSC_DEV_DVDROM);
 	hwinfo->DVD_ROM.crc16 = 0;
 	hwinfo->DVD_ROM.size = GetSizeFromDelay(SSBUSC_DEV_DVDROM);
+	//ugly hack to limit DVD Rom size by 4 Mb maximum
+	if(hwinfo->DVD_ROM.size > 0x400000)
+		hwinfo->DVD_ROM.size = 0x400000;
 	hwinfo->DVD_ROM.IsExists = romGetImageStat((const void*)hwinfo->DVD_ROM.StartAddress, (const void*)(hwinfo->DVD_ROM.StartAddress + 0x4000), &ImgStat) != NULL;
 
 	if(hwinfo->DVD_ROM.size > 0)
