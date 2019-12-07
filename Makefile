@@ -41,7 +41,7 @@ all:
 clean:
 	make clean -C sysman
 	make clean -C usbhdfsdfsv
-	rm -f $(EE_BIN) $(EE_BIN_REL) $(EE_OBJS) $(EE_TEMP_FILES)
+	rm -f $(EE_BIN) $(EE_PACKED_BIN) $(EE_BIN_REL) $(EE_OBJS) $(EE_TEMP_FILES)
 
 SIO2MAN_irx.c:
 	bin2c $(PS2SDK)/iop/irx/freesio2.irx SIO2MAN_irx.c SIO2MAN_irx

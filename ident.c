@@ -398,7 +398,7 @@ const char *GetSSBUSIFDesc(unsigned char revision){
 	const char *description;
 
 	if((description=PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_SSBUSIF, revision))==NULL){
-		description="Unknown";
+		description="Missing";
 	}
 
 	return description;
@@ -408,7 +408,7 @@ const char *GetSPEEDDesc(unsigned short int revision){
 	const char *description;
 
 	if((description=PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_SPEED, revision))==NULL){
-		description="Unknown";
+		description="Missing";
 	}
 
 	return description;
@@ -471,7 +471,7 @@ const char *GetGSChipDesc(unsigned short int revision){
 	const char *description;
 
 	if((description=PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_GS, revision))==NULL){
-		description="Unknown";
+		description="Missing";
 	}
 
 	return description;
@@ -481,7 +481,7 @@ const char *GetEEChipDesc(unsigned short int revision){
 	const char *description;
 
 	if((description=PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_EE, revision))==NULL){
-		description="Unknown";
+		description="Missing";
 	}
 
 	return description;
@@ -491,7 +491,7 @@ const char *GetIOPChipDesc(unsigned short int revision){
 	const char *description;
 
 	if((description=PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_IOP, revision))==NULL){
-		description="Unknown";
+		description="Missing";
 	}
 
 	return description;
@@ -501,7 +501,7 @@ const char *GetSPU2ChipDesc(unsigned short int revision){
 	const char *description;
 
 	if((description=PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_SPU2, revision))==NULL){
-		description="Unknown";
+		description="Missing";
 	}
 
 	return description;
@@ -511,7 +511,7 @@ const char *GetMECHACONChipDesc(unsigned short int revision){
 	const char *description;
 
 	if((description=PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_MECHACON, revision))==NULL){
-		description="Unknown";
+		description="Missing";
 	}
 
 	return description;
@@ -544,7 +544,7 @@ const char *GetMainboardModelDesc(const struct PS2IDBMainboardEntry *SystemInfor
 	if((ModelData=PS2IDBMS_LookupMainboardModel(SystemInformation))!=NULL){
 		description=ModelData->MainboardName;
 	}else{
-		description="Unknown";
+		description="Missing";
 	}
 
 	return description;
@@ -611,7 +611,7 @@ const char *GetModelIDDesc(unsigned int id){
 	const char *description;
 
 	if((description=PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_MODEL_ID, id))==NULL){
-		description="Unknown";
+		description="Missing";
 	}
 
 	return description;
@@ -621,7 +621,7 @@ const char *GetEMCSIDDesc(unsigned char id){
 	const char *description;
 
 	if((description=PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_EMCS_ID, id))==NULL){
-		description="Unknown";
+		description="Missing";
 	}
 
 	return description;
