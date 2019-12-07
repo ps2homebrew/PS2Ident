@@ -50,9 +50,9 @@ typedef struct PS2DBEEInformation{
 	u8 ICacheSize;
 	u8 DCacheSize;
 	u32 RAMSize;
-	u32 F520;
-	u32 F540;
-	u32 F550;
+	// u32 F520;
+	// u32 F540;
+	// u32 F550;
 } t_PS2DBEEHardwareInfo;
 
 typedef struct PS2DBSPU2HardwareInfo{

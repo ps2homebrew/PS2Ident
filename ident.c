@@ -63,9 +63,9 @@ int GetEEInformation(struct SystemInformation *SystemInformation){
 	SystemInformation->mainboard.gs.id=revision>>8;
 
 	ee_kmode_enter();
-	SystemInformation->mainboard.ee.F520=*(volatile unsigned int *)0xB000F520;
-	SystemInformation->mainboard.ee.F540=*(volatile unsigned int *)0xB000F540;
-	SystemInformation->mainboard.ee.F550=*(volatile unsigned int *)0xB000F550;
+	SystemInformation->EE_F520=*(volatile unsigned int *)0xB000F520;
+	SystemInformation->EE_F540=*(volatile unsigned int *)0xB000F540;
+	SystemInformation->EE_F550=*(volatile unsigned int *)0xB000F550;
 	ee_kmode_exit();
 
 	return 0;
@@ -695,16 +695,19 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
 	fprintf(stream, "EE:\r\n"
 		"\tImplementation:\t\t0x%02x\r\n"
 		"\tRevision:\t\t%u.%u (%s)\r\n"
+		"\tEE_F520:\t\t0x%08x\r\n"
+		"\tEE_F540:\t\t0x%08x\r\n"
+		"\tEE_F550:\t\t0x%08x\r\n"
 		"\tFPU implementation:\t0x%02x\r\n"
 		"\tFPU revision:\t\t%u.%u\r\n"
 		"\tICache size:\t\t0x%02x (%u KB)\r\n"
 		"\tDCache size:\t\t0x%02x (%u KB)\r\n"
-		"\tRAM size:\t\t%u bytes\r\n"
-		"\tEE_F520:\t\t0x%08x,EE_EF540: 0x%08x, EE_EF550: 0x%08x\r\n", SystemInformation->mainboard.ee.implementation, SystemInformation->mainboard.ee.revision>>4, SystemInformation->mainboard.ee.revision&0xF, GetEEChipDesc((unsigned short int)(SystemInformation->mainboard.ee.implementation)<<8|SystemInformation->mainboard.ee.revision), SystemInformation->mainboard.ee.FPUImplementation, SystemInformation->mainboard.ee.FPURevision>>4, SystemInformation->mainboard.ee.FPURevision&0xF,
+		"\tRAM size:\t\t%u bytes\r\n", SystemInformation->mainboard.ee.implementation, SystemInformation->mainboard.ee.revision>>4, SystemInformation->mainboard.ee.revision&0xF, GetEEChipDesc((unsigned short int)(SystemInformation->mainboard.ee.implementation)<<8|SystemInformation->mainboard.ee.revision),
+		SystemInformation->EE_F520,SystemInformation->EE_F540,SystemInformation->EE_F550,
+		SystemInformation->mainboard.ee.FPUImplementation, SystemInformation->mainboard.ee.FPURevision>>4, SystemInformation->mainboard.ee.FPURevision&0xF,
 		SystemInformation->mainboard.ee.ICacheSize, CalculateCPUCacheSize(SystemInformation->mainboard.ee.ICacheSize)/1024,
 		SystemInformation->mainboard.ee.DCacheSize, CalculateCPUCacheSize(SystemInformation->mainboard.ee.DCacheSize)/1024,
-		SystemInformation->mainboard.ee.RAMSize,
-		SystemInformation->mainboard.ee.F520,SystemInformation->mainboard.ee.F540,SystemInformation->mainboard.ee.F550);
+		SystemInformation->mainboard.ee.RAMSize);
 
 	fprintf(stream, "IOP:\r\n"
 		"\tRevision:\t\t0x%04x (%s)\r\n"
