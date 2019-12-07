@@ -10,3 +10,4 @@ build:
   artifacts:
     paths:
     - PS2Ident.elf
+    - PS2Ident_packed.elf
