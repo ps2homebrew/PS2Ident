@@ -541,11 +541,13 @@ const char *GetMainboardModelDesc(const struct PS2IDBMainboardEntry *SystemInfor
 	const char *description;
 	const struct PS2IDBMainboardEntry *ModelData;
 
-	if((ModelData=PS2IDBMS_LookupMainboardModel(SystemInformation))!=NULL){
+	if((ModelData=PS2IDBMS_LookupMainboardModel(SystemInformation))!=NULL)
 		description=ModelData->MainboardName;
-	}else{
+	else if(!strncmp(SystemInformation->romver, "0170", 4) || !strncmp(SystemInformation->romver, "0190", 4))
+		description="Missing (Sticker)";	//SCPH-5xxxx can be retrieved from sticker
+	else
 		description="Missing";
-	}
+	
 
 	return description;
 }
@@ -596,11 +598,13 @@ const char *GetChassisDesc(const struct PS2IDBMainboardEntry *SystemInformation)
 	else if(!strncmp(SystemInformation->MainboardName, "GH-061", 6) || !strncmp(SystemInformation->MainboardName, "GH-062", 6))
 		description = "N-chassis";	//SCPH-79000
 	else if(!strncmp(SystemInformation->MainboardName, "GH-070", 6) || !strncmp(SystemInformation->MainboardName, "GH-071", 6))
-		description = "P-chassis";	//SCPH-90000
+		description = "P-chassis";	//SCPH-90000, TVcombo
 	else if(!strncmp(SystemInformation->MainboardName, "GH-072", 6))
 		description = "R-chassis";	//SCPH-90000
 	else if(!strncmp(SystemInformation->MainboardName, "XPD-", 4))
 		description = "X-chassis";	//PSX
+	else if(!strncmp(SystemInformation->romver, "0170", 4) || !strncmp(SystemInformation->romver, "0190", 4))
+		description = "Missing (Sticker)";	//SCPH-5xxxx can be retrieved from sticker
 	else
 		description = "Unknown";
 
@@ -611,7 +615,7 @@ const char *GetModelIDDesc(unsigned int id){
 	const char *description;
 
 	if((description=PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_MODEL_ID, id))==NULL){
-		description="Missing";
+		description="Missing (Sticker)";
 	}
 
 	return description;
@@ -621,7 +625,7 @@ const char *GetEMCSIDDesc(unsigned char id){
 	const char *description;
 
 	if((description=PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_EMCS_ID, id))==NULL){
-		description="Missing";
+		description="Missing (Sticker)";
 	}
 
 	return description;
