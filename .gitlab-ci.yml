@@ -13,5 +13,6 @@ build:
     - lang/
     - licenses/
     - PS2Ident.elf
+    - PS2Ident.db
     - README.md
     - changelog.txt
