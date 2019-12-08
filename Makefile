@@ -1,8 +1,8 @@
 #Enable to build support for the TOOL's host interface
 DSNET_HOST_SUPPORT = 0
 
-EE_BIN = PS2Ident.elf
-EE_PACKED_BIN = PS2Ident_packed.elf
+EE_BIN = PS2Ident_np.elf
+EE_PACKED_BIN = PS2Ident.elf
 
 #IOP modules
 EE_IOP_OBJS = SIO2MAN_irx.o MCMAN_irx.o MCSERV_irx.o PADMAN_irx.o POWEROFF_irx.o PS2DEV9_irx.o USBD_irx.o USBHDFSD_irx.o USBHDFSDFSV_irx.o SYSMAN_irx.o IOPRP_img.o
