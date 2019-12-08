@@ -7,7 +7,10 @@ build:
   stage: build
   script:
     - make clean all
+    - cp PS2Ident_packed.elf Release/PS2Ident.elf
+    - cp README.md Release/README.md
+    - cd Release/
+    - zip -r [$(date +'%y%m%d')]PS2Ident-0835-bin.zip lang/ license/ PS2Ident.db changelog.txt README.md PS2Ident.elf
   artifacts:
     paths:
-    - PS2Ident.elf
-    - PS2Ident_packed.elf
+    - Release/*.zip

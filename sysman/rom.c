@@ -78,9 +78,9 @@ int ROMGetHardwareInfo(t_SysmanHardwareInfo *hwinfo)
 	//DEV1, DVD ROM
 	hwinfo->DVD_ROM.StartAddress = GetBaseAddress(SSBUSC_DEV_DVDROM);
 	hwinfo->DVD_ROM.crc16 = 0;
-	
-	/* GetSizeFromDelay(SSBUSC_DEV_DVDROM);
-	The set size of DEV1 may not be its real size.
+	hwinfo->DVD_ROM.size = GetSizeFromDelay(SSBUSC_DEV_DVDROM);
+
+	/* The set size of DEV1 may not be its real size.
 	Now that the sizes of the individual regions are known, check that the size of DEV1 is fitting.
 	The DVD ROM contains the rom1, rom2 and erom regions, and these regions exist in this order within the DVD ROM chip.
 	The rom2 region only exists on Chinese consoles. */

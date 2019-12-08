@@ -1,6 +1,7 @@
 *.o
 *.elf
 *_irx.c
+*.irx
 
 background_img.c
 buttons.c
