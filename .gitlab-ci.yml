@@ -7,7 +7,6 @@ build:
   stage: build
   script:
     - make clean all
-    - zip -r [$(date +'%y%m%d')]PS2Ident-0835-bin.zip lang/ license/ PS2Ident.db changelog.txt README.md PS2Ident.elf
   artifacts:
     name: "$CI_PROJECT_NAME-$CI_COMMIT_SHORT_SHA"
     paths:
