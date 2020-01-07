@@ -1,0 +1,6 @@
+- research new EE value from @wisi (data collection)
+- add summary page (with contributor levels - text log, sticker, dissasembly, ROM dumps)
+- add ROM database (BOOT and DVD), mostly for redump database
+- add ability to store BOOTrom EXTINFO field into text log file
+- add additional field for network adapters for FAT models (including non-official)
+- add ability to dump keys (all serials + HDD key) into separate file
