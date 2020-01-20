@@ -1,4 +1,4 @@
-image: registry.gitlab.com/ps2max/ps2sdk:latest
+image: registry.gitlab.com/ps2max/ps2dev-scripts:ps2max
 
 stages:
   - build
