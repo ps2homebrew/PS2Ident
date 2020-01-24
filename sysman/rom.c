@@ -80,15 +80,6 @@ int ROMGetHardwareInfo(t_SysmanHardwareInfo *hwinfo)
 	hwinfo->DVD_ROM.crc16 = 0;
 	hwinfo->DVD_ROM.size = GetSizeFromDelay(SSBUSC_DEV_DVDROM);
 
-	/* The set size of DEV1 may not be its real size.
-	Now that the sizes of the individual regions are known, check that the size of DEV1 is fitting.
-	The DVD ROM contains the rom1, rom2 and erom regions, and these regions exist in this order within the DVD ROM chip.
-	The rom2 region only exists on Chinese consoles. */
-	size = SysmanCalcROMChipSize(hwinfo->erom.StartAddress-hwinfo->ROMs[1].StartAddress+hwinfo->erom.size);
-	printf("DVD ROM real size: %u (DEV1: %lu)\n", size, hwinfo->DVD_ROM.size);
-	if(size < hwinfo->DVD_ROM.size)
-		hwinfo->DVD_ROM.size = size;
-
 	hwinfo->DVD_ROM.IsExists = romGetImageStat((const void*)hwinfo->DVD_ROM.StartAddress, (const void*)(hwinfo->DVD_ROM.StartAddress + 0x4000), &ImgStat) != NULL;
 
 	if(hwinfo->DVD_ROM.size > 0)
@@ -170,7 +161,7 @@ int ROMGetHardwareInfo(t_SysmanHardwareInfo *hwinfo)
 	   Now that the sizes of the individual regions are known, check that the size of DEV1 is fitting.
 	   The DVD ROM contains the rom1, rom2 and erom regions, and these regions exist in this order within the DVD ROM chip.
 	   The rom2 region only exists on Chinese consoles. */
-	size = SysmanCalcROMChipSize(hwinfo->erom.StartAddress-hwinfo->ROMs[1].StartAddress+hwinfo->erom.size);
+	size = SysmanCalcROMChipSize(hwinfo->erom.StartAddress-hwinfo->ROMs[1].StartAddress + hwinfo->erom.size);
 	printf("DVD ROM real size: %u (DEV1: %lu)\n", size, hwinfo->DVD_ROM.size);
 
 	if(size < hwinfo->DVD_ROM.size)
