@@ -161,10 +161,16 @@ int ROMGetHardwareInfo(t_SysmanHardwareInfo *hwinfo)
 	   The DVD ROM contains the rom1, rom2 and erom regions, and these regions exist in this order within the DVD ROM chip.
 	   The rom2 region only exists on Chinese consoles. */
 	if (hwinfo->erom.IsExists)
-	    size = SysmanCalcROMChipSize(hwinfo->erom.StartAddress-hwinfo - >ROMs[1].StartAddress + hwinfo->erom.size);
+	{
+		size = SysmanCalcROMChipSize(hwinfo->erom.StartAddress-hwinfo->ROMs[1].StartAddress + hwinfo->erom.size);
+	}
 	else
-	// On slim consoles erom doesn't exist (?not detected in latest versions?), so I limited DVD rom size by 4Mb
-	    size = 0x400000;
+	{
+		// On slim consoles erom not detected in latest version, so I limited DVD rom size to 4Mb
+		// FIXME: EROM is not detect on slims properly
+		size = 0x400000;
+	}
+	
 	printf("DVD ROM real size: %u (DEV1: %lu)\n", size, hwinfo->DVD_ROM.size);
 
 	if(size < hwinfo->DVD_ROM.size)

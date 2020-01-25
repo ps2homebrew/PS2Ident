@@ -4,3 +4,4 @@
 - add ability to store BOOTrom EXTINFO field into text log file
 - add additional field for network adapters for FAT models (including non-official)
 - add ability to dump keys (all serials + HDD key) into separate file
+- fix DVD EROM detection on slim consoles
