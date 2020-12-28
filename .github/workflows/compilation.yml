@@ -28,4 +28,6 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: ${{ env.GITHUB_REPOSITORY }}-${{ steps.slug.outputs.sha8 }}
-        path: ['*.elf', '*.ELF']
+        path: |
+          *.elf
+          *.ELF
