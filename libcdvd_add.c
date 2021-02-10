@@ -69,15 +69,33 @@ int sceCdAltReadRegionParams(u8 *data, u32 *stat)
 int sceCdAltMV(u8 *buffer, u32 *status)
 {
 	int result;
-	unsigned char command, output[4];
+	unsigned char subcommand, output[4];
 
-	command=0;
-	if((result=sceCdApplySCmd(0x03, &command, sizeof(command), output, sizeof(output)))!=0)
+	subcommand=0;
+	if((result=sceCdApplySCmd(0x03, &subcommand, sizeof(subcommand), output, sizeof(output)))!=0)
 	{
 		*status=output[0]&0x80;
 		output[0]&=0x7F;
 		memcpy(buffer, output, sizeof(output));
 	}
+
+	return result;
+}
+
+/* Thanks to krat0s researches this seems to return DSP version  */
+int sceCdAltMV2(u8 *buffer, u32 *stat)
+{
+	int result;
+	unsigned char subcommand, out_buffer[16];
+
+	subcommand=1;
+	if((result=sceCdApplySCmd(0x03, &subcommand, sizeof(subcommand), out_buffer, sizeof(out_buffer)))!=0)
+	{
+		*stat=out_buffer[0];
+	}
+
+	/* 2 bytes: minor and major version */
+	memcpy(buffer, &out_buffer[1], 2);
 
 	return result;
 }
@@ -105,11 +123,11 @@ int sceCdAltRM(char *ModelName, u32 *stat)
 
 int sceCdAltReadRenewalDate(void *buffer, u32 *stat)
 {
-	unsigned char in_buffer[1], out_buffer[16];
 	int result;
+	unsigned char subcommand, out_buffer[16];
 
-	in_buffer[0]=0xFD;
-	if((result=sceCdApplySCmd(0x03, in_buffer, sizeof(in_buffer), out_buffer, sizeof(out_buffer)))!=0)
+	subcommand=0xFD;
+	if((result=sceCdApplySCmd(0x03, &subcommand, sizeof(subcommand), out_buffer, sizeof(out_buffer)))!=0)
 	{
 		*stat=out_buffer[0];
 	}

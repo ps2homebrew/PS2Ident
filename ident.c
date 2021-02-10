@@ -186,11 +186,15 @@ int GetPeripheralInformation(struct SystemInformation *SystemInformation){
 	memset(SystemInformation->iLinkID, 0, sizeof(SystemInformation->iLinkID));
 	memset(SystemInformation->SMAP_MAC_address, 0, sizeof(SystemInformation->SMAP_MAC_address));
 	memset(SystemInformation->mainboard.MECHACONVersion, 0, sizeof(SystemInformation->mainboard.MECHACONVersion));
+	memset(SystemInformation->mainboard.DSPVersion, 0, sizeof(SystemInformation->mainboard.DSPVersion));
 	memset(SystemInformation->mainboard.MRenewalDate, 0, sizeof(SystemInformation->mainboard.MRenewalDate));
 
 	if(sceCdAltMV(SystemInformation->mainboard.MECHACONVersion, &stat)==0 || (stat&0x80)!=0){
 		printf("Failed to read MECHACON version. Stat: %x\n", stat);
 		SystemInformation->mainboard.status |= PS2IDB_STAT_ERR_MVER;
+	}
+	if(sceCdAltMV2(SystemInformation->mainboard.DSPVersion, &stat)==0 || (stat&0x80)!=0){
+		printf("Failed to read DSP version. Stat: %x\n", stat);
 	}
 	if(sceCdReadConsoleID(SystemInformation->ConsoleID, &result)==0 || (result&0x80)){
 		printf("Failed to read console ID. Stat: %x\n", result);
@@ -547,7 +551,7 @@ const char *GetMainboardModelDesc(const struct PS2IDBMainboardEntry *SystemInfor
 		description="Missing (Sticker)";	//SCPH-5xxxx can be retrieved from sticker
 	else
 		description="Missing";
-	
+
 
 	return description;
 }
@@ -748,15 +752,19 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
 
 	if(!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MVER))
 	{
-		fprintf(stream, "\tMECHACON revision:\t%u.%u (%s)\r\n"
+		fprintf(stream, "\tMECHACON revision:\t%u.%02u (%s)\r\n"
+				"\tDSP revision:\t%u.%u\r\n"
 				"\tMagicGate region:\t0x%02x (%s)\r\n"
 				"\tSystem type:\t\t0x%02x (%s)\r\n",
-						SystemInformation->mainboard.MECHACONVersion[1], SystemInformation->mainboard.MECHACONVersion[2], GetMECHACONChipDesc((unsigned int)(SystemInformation->mainboard.MECHACONVersion[1])<<8|(unsigned int)(SystemInformation->mainboard.MECHACONVersion[2])), SystemInformation->mainboard.MECHACONVersion[0], GetRegionDesc(SystemInformation->mainboard.MECHACONVersion[0]),
+						SystemInformation->mainboard.MECHACONVersion[1], SystemInformation->mainboard.MECHACONVersion[2], GetMECHACONChipDesc((unsigned int)(SystemInformation->mainboard.MECHACONVersion[1])<<8|(unsigned int)(SystemInformation->mainboard.MECHACONVersion[2])),
+						SystemInformation->mainboard.DSPVersion[1], SystemInformation->mainboard.DSPVersion[2],
+						SystemInformation->mainboard.MECHACONVersion[0], GetRegionDesc(SystemInformation->mainboard.MECHACONVersion[0]),
 						SystemInformation->mainboard.MECHACONVersion[3], GetSystemTypeDesc(SystemInformation->mainboard.MECHACONVersion[3]));
 	}
 	else
 	{
 		fputs(	"\tMECHACON revision:\t-.-\r\n"
+			"\tDSP revision:\t-.-\r\ns"
 			"\tMagicGate region:\t-\r\n"
 			"\tSystem type:\t\t-\r\n", stream);
 	}
@@ -764,7 +772,7 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
 	fputs("\tADD0x010:\t\t", stream);
 	if(!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_ADD010))
 	{
-		fprintf(stream, "0x%04x (%s)\r\n", 
+		fprintf(stream, "0x%04x (%s)\r\n",
 			SystemInformation->mainboard.ADD010, GetADD010Desc(SystemInformation->mainboard.ADD010));
 	}
 	else
