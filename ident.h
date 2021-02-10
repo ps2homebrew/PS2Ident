@@ -1,26 +1,29 @@
-struct RequiredFileSpaceStat{
-	unsigned int IsFile;
-	unsigned int length;
+struct RequiredFileSpaceStat
+{
+    unsigned int IsFile;
+    unsigned int length;
 };
 
-struct SystemInformation{
-	struct PS2IDBMainboardEntry mainboard;
-	t_PS2DBROMHardwareInfo ROMs[3];
-	t_PS2DBROMHardwareInfo erom;
-	unsigned char ConsoleID[8];
-	unsigned char iLinkID[8];
-	unsigned char SMAP_MAC_address[6];
-	char chassis[14];
-	char DVDPlayerVer[32];
-	char PS1DRVVer[32];
-	unsigned int EE_F520;
-	unsigned int EE_F540;
-	unsigned int EE_F550;
+struct SystemInformation
+{
+    struct PS2IDBMainboardEntry mainboard;
+    t_PS2DBROMHardwareInfo ROMs[3];
+    t_PS2DBROMHardwareInfo erom;
+    unsigned char ConsoleID[8];
+    unsigned char iLinkID[8];
+    unsigned char SMAP_MAC_address[6];
+    char chassis[14];
+    char DVDPlayerVer[32];
+    char PS1DRVVer[32];
+    unsigned int EE_F520;
+    unsigned int EE_F540;
+    unsigned int EE_F550;
 };
 
-struct DumpingStatus{
-	float progress;
-	int status;	// 0 = In progress, 1 = complete, <0 = failed.
+struct DumpingStatus
+{
+    float progress;
+    int status; // 0 = In progress, 1 = complete, <0 = failed.
 };
 
 int GetEEInformation(struct SystemInformation *SystemInformation);
@@ -59,9 +62,10 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
 
 int CheckROM(const struct PS2IDBMainboardEntry *entry);
 
-enum DUMP_REGIONS{
-	DUMP_REGION_BOOT_ROM	=0,
-	DUMP_REGION_DVD_ROM,
-	DUMP_REGION_EEPROM,
-	DUMP_REGION_COUNT
+enum DUMP_REGIONS
+{
+    DUMP_REGION_BOOT_ROM = 0,
+    DUMP_REGION_DVD_ROM,
+    DUMP_REGION_EEPROM,
+    DUMP_REGION_COUNT
 };

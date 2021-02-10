@@ -19,44 +19,44 @@
 
 struct RomDirEntry
 {
-	char name[10];
-	u16 ExtInfoEntrySize;
-	u32 size;
+    char name[10];
+    u16 ExtInfoEntrySize;
+    u32 size;
 };
 
 struct RomImg
 {
-	const void *ImageStart;
-	const void *RomdirStart;
-	const void *RomdirEnd;
+    const void *ImageStart;
+    const void *RomdirStart;
+    const void *RomdirEnd;
 };
 
 /* Each ROMDIR entry can have any combination of EXTINFO fields. */
 struct ExtInfoFieldEntry
 {
-	u16 value;	/* Only applicable for the version field type. */
-	u8 ExtLength;	/* The length of data appended to the end of this entry. */
-	u8 type;
+    u16 value;    /* Only applicable for the version field type. */
+    u8 ExtLength; /* The length of data appended to the end of this entry. */
+    u8 type;
 };
 
 enum ExtInfoFieldTypes
 {
-	EXTINFO_FIELD_TYPE_DATE=1,
-	EXTINFO_FIELD_TYPE_VERSION,
-	EXTINFO_FIELD_TYPE_COMMENT,
-	EXTINFO_FIELD_TYPE_FIXED = 0x7F	//Must exist at a fixed location.
+    EXTINFO_FIELD_TYPE_DATE = 1,
+    EXTINFO_FIELD_TYPE_VERSION,
+    EXTINFO_FIELD_TYPE_COMMENT,
+    EXTINFO_FIELD_TYPE_FIXED = 0x7F //Must exist at a fixed location.
 };
 
-#define ROMDRV_MAX_IMAGES	4
-#define ROMDRV_MAX_FILES	8
+#define ROMDRV_MAX_IMAGES    4
+#define ROMDRV_MAX_FILES     8
 
 //Error codes
-#define ROMDRV_ADD_FAILED		-160
-#define ROMDRV_DEL_FAILED		-161
-#define ROMDRV_ADD_BAD_IMAGE	-162
+#define ROMDRV_ADD_FAILED    -160
+#define ROMDRV_DEL_FAILED    -161
+#define ROMDRV_ADD_BAD_IMAGE -162
 
 #define romdrv_IMPORTS_start DECLARE_IMPORT_TABLE(romdrv, 2, 1)
-#define romdrv_IMPORTS_end END_IMPORT_TABLE
+#define romdrv_IMPORTS_end   END_IMPORT_TABLE
 
 int romAddDevice(int unit, const void *image);
 #define I_romAddDevice DECLARE_IMPORT(4, romAddDevice)
