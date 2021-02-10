@@ -190,7 +190,7 @@ int GetPeripheralInformation(struct SystemInformation *SystemInformation)
     memset(SystemInformation->iLinkID, 0, sizeof(SystemInformation->iLinkID));
     memset(SystemInformation->SMAP_MAC_address, 0, sizeof(SystemInformation->SMAP_MAC_address));
     memset(SystemInformation->mainboard.MECHACONVersion, 0, sizeof(SystemInformation->mainboard.MECHACONVersion));
-    memset(SystemInformation->mainboard.DSPVersion, 0, sizeof(SystemInformation->mainboard.DSPVersion));
+    memset(SystemInformation->DSPVersion, 0, sizeof(SystemInformation->DSPVersion));
     memset(SystemInformation->mainboard.MRenewalDate, 0, sizeof(SystemInformation->mainboard.MRenewalDate));
 
     if (sceCdAltMV(SystemInformation->mainboard.MECHACONVersion, &stat) == 0 || (stat & 0x80) != 0)
@@ -198,7 +198,7 @@ int GetPeripheralInformation(struct SystemInformation *SystemInformation)
         printf("Failed to read MECHACON version. Stat: %x\n", stat);
         SystemInformation->mainboard.status |= PS2IDB_STAT_ERR_MVER;
     }
-    if (sceCdAltMV2(SystemInformation->mainboard.DSPVersion, &stat) == 0 || (stat & 0x80) != 0)
+    if (sceCdAltMV2(SystemInformation->DSPVersion, &stat) == 0 || (stat & 0x80) != 0)
     {
         printf("Failed to read DSP version. Stat: %x\n", stat);
     }
@@ -842,7 +842,7 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
                         "\tMagicGate region:\t0x%02x (%s)\r\n"
                         "\tSystem type:\t\t0x%02x (%s)\r\n",
                 SystemInformation->mainboard.MECHACONVersion[1], SystemInformation->mainboard.MECHACONVersion[2], GetMECHACONChipDesc((unsigned int)(SystemInformation->mainboard.MECHACONVersion[1]) << 8 | (unsigned int)(SystemInformation->mainboard.MECHACONVersion[2])),
-                SystemInformation->mainboard.DSPVersion[1], SystemInformation->mainboard.DSPVersion[2],
+                SystemInformation->DSPVersion[1], SystemInformation->DSPVersion[2],
                 SystemInformation->mainboard.MECHACONVersion[0], GetRegionDesc(SystemInformation->mainboard.MECHACONVersion[0]),
                 SystemInformation->mainboard.MECHACONVersion[3], GetSystemTypeDesc(SystemInformation->mainboard.MECHACONVersion[3]));
     }

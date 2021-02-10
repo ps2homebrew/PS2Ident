@@ -15,6 +15,7 @@ struct SystemInformation
     char chassis[14];
     char DVDPlayerVer[32];
     char PS1DRVVer[32];
+    u8 DSPVersion[2];
     unsigned int EE_F520;
     unsigned int EE_F540;
     unsigned int EE_F550;
