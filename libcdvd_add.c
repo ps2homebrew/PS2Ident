@@ -83,10 +83,10 @@ int sceCdAltMV(u8 *buffer, u32 *stat)
 }
 
 /* Thanks to krat0s researches this seems to return DSP version  */
-int sceCdAltMV2(u8 *buffer, u32 *stat)
+int sceGetDspVersion(u8 *buffer, u32 *stat)
 {
     int result;
-    unsigned char subcommand, out_buffer[3];
+    unsigned char subcommand, out_buffer[2];
 
     subcommand = 1;
     if ((result = sceCdApplySCmd(0x03, &subcommand, sizeof(subcommand), out_buffer, sizeof(out_buffer))) != 0)

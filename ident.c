@@ -198,7 +198,7 @@ int GetPeripheralInformation(struct SystemInformation *SystemInformation)
         printf("Failed to read MECHACON version. Stat: %x\n", stat);
         SystemInformation->mainboard.status |= PS2IDB_STAT_ERR_MVER;
     }
-    if (sceCdAltMV2(SystemInformation->DSPVersion, &stat) == 0 || (stat & 0x80) != 0)
+    if (sceGetDspVersion(SystemInformation->DSPVersion, &stat) == 0 || (stat & 0x80) != 0)
     {
         printf("Failed to read DSP version. Stat: %x\n", stat);
     }
@@ -837,11 +837,11 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MVER))
     {
         fprintf(stream, "\tMECHACON revision:\t%u.%02u (%s)\r\n"
-                        "\tDSP revision:\t\t%u.%u\r\n"
+                        "\tDSP revision:\t\t%u\r\n"
                         "\tMagicGate region:\t0x%02x (%s)\r\n"
                         "\tSystem type:\t\t0x%02x (%s)\r\n",
                 SystemInformation->mainboard.MECHACONVersion[1], SystemInformation->mainboard.MECHACONVersion[2], GetMECHACONChipDesc((unsigned int)(SystemInformation->mainboard.MECHACONVersion[1]) << 8 | (unsigned int)(SystemInformation->mainboard.MECHACONVersion[2])),
-                SystemInformation->DSPVersion[1], SystemInformation->DSPVersion[2],
+                SystemInformation->DSPVersion[1],
                 SystemInformation->mainboard.MECHACONVersion[0], GetRegionDesc(SystemInformation->mainboard.MECHACONVersion[0]),
                 SystemInformation->mainboard.MECHACONVersion[3], GetSystemTypeDesc(SystemInformation->mainboard.MECHACONVersion[3]));
     }

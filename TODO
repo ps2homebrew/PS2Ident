@@ -9,3 +9,4 @@
 - add ability to dump keys (all serials + HDD key) into separate file
 - fix DVD EROM detection on slim consoles
 - add DSP chip detection
+- split network adapter, so al possible official adapters will be shown
