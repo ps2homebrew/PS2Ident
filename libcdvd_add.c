@@ -69,14 +69,14 @@ int sceCdAltReadRegionParams(u8 *data, u32 *stat)
 int sceCdAltMV(u8 *buffer, u32 *stat)
 {
     int result;
-    unsigned char subcommand, output[4];
+    unsigned char subcommand, out_buffer[4];
 
     subcommand = 0;
-    if ((result = sceCdApplySCmd(0x03, &subcommand, sizeof(subcommand), output, sizeof(output))) != 0)
+    if ((result = sceCdApplySCmd(0x03, &subcommand, sizeof(subcommand), out_buffer, sizeof(out_buffer))) != 0)
     {
-        *stat = output[0] & 0x80;
-        output[0] &= 0x7F;
-        memcpy(buffer, output, sizeof(output));
+        *stat = out_buffer[0] & 0x80;
+        out_buffer[0] &= 0x7F;
+        memcpy(buffer, out_buffer, sizeof(out_buffer));
     }
 
     return result;
@@ -86,16 +86,16 @@ int sceCdAltMV(u8 *buffer, u32 *stat)
 int sceCdAltMV2(u8 *buffer, u32 *stat)
 {
     int result;
-    unsigned char subcommand, output[3];
+    unsigned char subcommand, out_buffer[3];
 
     subcommand = 1;
     if ((result = sceCdApplySCmd(0x03, &subcommand, sizeof(subcommand), out_buffer, sizeof(out_buffer))) != 0)
     {
-        *stat = output[0];
+        *stat = out_buffer[0];
     }
 
     /* 2 bytes: minor and major version */
-    memcpy(buffer, output, sizeof(output));
+    memcpy(buffer, out_buffer, sizeof(out_buffer));
 
     return result;
 }
