@@ -45,9 +45,9 @@ int GetEEInformation(struct SystemInformation *SystemInformation)
     unsigned short int revision;
     unsigned int value;
 
-    revision                                       = GetCop0(15);
-    SystemInformation->mainboard.ee.implementation = revision >> 8;
-    SystemInformation->mainboard.ee.revision       = revision & 0xFF;
+    revision                                          = GetCop0(15);
+    SystemInformation->mainboard.ee.implementation    = revision >> 8;
+    SystemInformation->mainboard.ee.revision          = revision & 0xFF;
 
     asm("cfc1 %0, $0\n"
         : "=r"(revision)
@@ -247,7 +247,7 @@ int GetPeripheralInformation(struct SystemInformation *SystemInformation)
 int DumpRom(const char *filename, const struct SystemInformation *SystemInformation, struct DumpingStatus *DumpingStatus, unsigned int DumpingRegion)
 {
     FILE *file;
-    int result;
+    int result = 0;
     unsigned int BytesToRead, BytesRemaining, ROMSize, prevSize;
     const unsigned char *MemDumpStart;
     void *buffer1, *buffer2, *pBuffer;
@@ -269,7 +269,6 @@ int DumpRom(const char *filename, const struct SystemInformation *SystemInformat
     buffer1        = memalign(64, MEM_IO_BLOCK_SIZE);
     buffer2        = memalign(64, MEM_IO_BLOCK_SIZE);
 
-    result         = 0;
     BytesRemaining = ROMSize;
     if ((file = fopen(filename, "wb")) != NULL)
     {
@@ -609,7 +608,7 @@ const char *GetMainboardModelDesc(const struct PS2IDBMainboardEntry *SystemInfor
     if ((ModelData = PS2IDBMS_LookupMainboardModel(SystemInformation)) != NULL)
         description = ModelData->MainboardName;
     else if (!strncmp(SystemInformation->romver, "0170", 4) || !strncmp(SystemInformation->romver, "0190", 4))
-        description = "Missing (Sticker)"; //SCPH-5xxxx can be retrieved from sticker
+        description = "Missing Sticker"; //SCPH-5xxxx can be retrieved from sticker
     else
         description = "Missing";
 
@@ -672,7 +671,7 @@ const char *GetChassisDesc(const struct PS2IDBMainboardEntry *SystemInformation)
     else if (!strncmp(SystemInformation->MainboardName, "XPD-", 4))
         description = "X-chassis"; //PSX
     else if (!strncmp(SystemInformation->romver, "0170", 4) || !strncmp(SystemInformation->romver, "0190", 4))
-        description = "Missing (Sticker)"; //SCPH-5xxxx can be retrieved from sticker
+        description = "Missing Sticker"; //SCPH-5xxxx can be retrieved from sticker
     else
         description = "Unknown";
 
@@ -685,7 +684,7 @@ const char *GetModelIDDesc(unsigned int id)
 
     if ((description = PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_MODEL_ID, id)) == NULL)
     {
-        description = "Missing (Sticker)";
+        description = "Missing Sticker";
     }
 
     return description;
@@ -697,7 +696,7 @@ const char *GetEMCSIDDesc(unsigned char id)
 
     if ((description = PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_EMCS_ID, id)) == NULL)
     {
-        description = "Missing (Sticker)";
+        description = "Missing Sticker";
     }
 
     return description;
@@ -838,7 +837,7 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MVER))
     {
         fprintf(stream, "\tMECHACON revision:\t%u.%02u (%s)\r\n"
-                        "\tDSP revision:\t%u.%u\r\n"
+                        "\tDSP revision:\t\t%u.%u\r\n"
                         "\tMagicGate region:\t0x%02x (%s)\r\n"
                         "\tSystem type:\t\t0x%02x (%s)\r\n",
                 SystemInformation->mainboard.MECHACONVersion[1], SystemInformation->mainboard.MECHACONVersion[2], GetMECHACONChipDesc((unsigned int)(SystemInformation->mainboard.MECHACONVersion[1]) << 8 | (unsigned int)(SystemInformation->mainboard.MECHACONVersion[2])),

@@ -66,7 +66,7 @@ int sceCdAltReadRegionParams(u8 *data, u32 *stat)
 
 	On the SCPH-10000 and SCPH-15000, EELOADCNF doesn't exist and hence this behaviour won't exist.
 */
-int sceCdAltMV(u8 *buffer, u32 *status)
+int sceCdAltMV(u8 *buffer, u32 *stat)
 {
     int result;
     unsigned char subcommand, output[4];
@@ -74,7 +74,7 @@ int sceCdAltMV(u8 *buffer, u32 *status)
     subcommand = 0;
     if ((result = sceCdApplySCmd(0x03, &subcommand, sizeof(subcommand), output, sizeof(output))) != 0)
     {
-        *status = output[0] & 0x80;
+        *stat = output[0] & 0x80;
         output[0] &= 0x7F;
         memcpy(buffer, output, sizeof(output));
     }
@@ -86,16 +86,16 @@ int sceCdAltMV(u8 *buffer, u32 *status)
 int sceCdAltMV2(u8 *buffer, u32 *stat)
 {
     int result;
-    unsigned char subcommand, out_buffer[16];
+    unsigned char subcommand, output[3];
 
     subcommand = 1;
     if ((result = sceCdApplySCmd(0x03, &subcommand, sizeof(subcommand), out_buffer, sizeof(out_buffer))) != 0)
     {
-        *stat = out_buffer[0];
+        *stat = output[0];
     }
 
     /* 2 bytes: minor and major version */
-    memcpy(buffer, &out_buffer[1], 2);
+    memcpy(buffer, output, sizeof(output));
 
     return result;
 }

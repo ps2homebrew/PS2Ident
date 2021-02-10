@@ -1,7 +1,11 @@
 - research new EE value from @wisi (data collection)
 - add summary page (with contributor levels - text log, sticker, dissasembly, ROM dumps)
 - add ROM database (BOOT and DVD), mostly for redump database
+- store BOOT not as crc but as datecode from EXTINFO field
+- store DVD not as crc but as DVD player version
+- store PS1Drv version into database
 - add ability to store BOOTrom EXTINFO field into text log file
 - add additional field for network adapters for FAT models (including non-official)
 - add ability to dump keys (all serials + HDD key) into separate file
 - fix DVD EROM detection on slim consoles
+- add DSP chip detection
