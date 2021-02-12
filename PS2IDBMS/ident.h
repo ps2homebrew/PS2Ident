@@ -1,0 +1,23 @@
+const char *GetiLinkSpeedDesc(unsigned char speed);
+const char *GetiLinkComplianceLvlDesc(unsigned char level);
+const char *GetiLinkVendorDesc(unsigned int vendor);
+const char *GetSSBUSIFDesc(unsigned char revision);
+const char *GetSPEEDDesc(unsigned short int revision);
+const char *GetSPEEDCapsDesc(unsigned short int caps);
+const char *GetPHYVendDesc(unsigned int oui);
+const char *GetPHYModelDesc(unsigned int oui, unsigned char model);
+const char *GetGSChipDesc(unsigned short int revision);
+const char *GetEEChipDesc(unsigned short int revision);
+const char *GetIOPChipDesc(unsigned short int revision);
+const char *GetSPU2ChipDesc(unsigned short int revision);
+const char *GetMECHACONChipDesc(unsigned short int revision);
+const char *GetSystemTypeDesc(unsigned char type);
+const char *GetRegionDesc(unsigned char region);
+const char *GetMRPDesc(unsigned short int id);
+const char *GetChassisDesc(const struct PS2IDBMainboardEntry *SystemInformation);
+const char *GetModelIDDesc(unsigned int id);
+const char *GetEMCSIDDesc(unsigned char id);
+const char *GetADD010Desc(unsigned short int id);
+
+unsigned int CalculateCPUCacheSize(unsigned char value);
+int WriteSystemInformation(FILE *stream, const struct PS2IDBMainboardEntry *SystemInformation);
