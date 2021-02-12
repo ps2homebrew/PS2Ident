@@ -8,4 +8,3 @@
 int SysmanCalcROMRegionSize(const void *ROMStart);
 int SysmanCalcROMChipSize(unsigned int RegionSize);
 int SysmanGetMACAddress(unsigned char *MAC_address);
-

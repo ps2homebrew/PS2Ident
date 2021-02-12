@@ -71,191 +71,199 @@ static unsigned char ConsoleRegionData[13];
 
 static int LoadEROMDRV(void)
 {
-	char eromdrv[] = "rom1:EROMDRV?";
-	int result;
+    char eromdrv[] = "rom1:EROMDRV?";
+    int result;
 
-	//Handle region-specific DVD Player of newer consoles.
-	if(OSDGetDVDPlayerRegion(&eromdrv[12]) == 0 || eromdrv[12] != '\0')
-	{
-		eromdrv[12] = '\0';	//Replace '?' with a NULL.
-	}
+    //Handle region-specific DVD Player of newer consoles.
+    if (OSDGetDVDPlayerRegion(&eromdrv[12]) == 0 || eromdrv[12] != '\0')
+    {
+        eromdrv[12] = '\0'; //Replace '?' with a NULL.
+    }
 
-	return SifLoadModuleEncrypted(eromdrv, 0, NULL);
+    return SifLoadModuleEncrypted(eromdrv, 0, NULL);
 }
 
-#define SYSTEM_INIT_THREAD_STACK_SIZE	0x800
+#define SYSTEM_INIT_THREAD_STACK_SIZE 0x800
 
-struct SystemInitParams{
-	struct SystemInformation *SystemInformation;
-	int InitCompleteSema;
+struct SystemInitParams
+{
+    struct SystemInformation *SystemInformation;
+    int InitCompleteSema;
 };
 
 static void SystemInitThread(struct SystemInitParams *SystemInitParams)
 {
-	GetRomName(SystemInitParams->SystemInformation->mainboard.romver);
+    GetRomName(SystemInitParams->SystemInformation->mainboard.romver);
 
-	SifExecModuleBuffer(MCSERV_irx, size_MCSERV_irx, 0, NULL, NULL);
-	SifExecModuleBuffer(PADMAN_irx, size_PADMAN_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(MCSERV_irx, size_MCSERV_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(PADMAN_irx, size_PADMAN_irx, 0, NULL, NULL);
 
-	SifExecModuleBuffer(POWEROFF_irx, size_POWEROFF_irx, 0, NULL, NULL);
-	SifExecModuleBuffer(PS2DEV9_irx, size_PS2DEV9_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(POWEROFF_irx, size_POWEROFF_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(PS2DEV9_irx, size_PS2DEV9_irx, 0, NULL, NULL);
 
-	SifLoadModule("rom0:ADDDRV", 0, NULL);
-	SifLoadModule("rom0:ADDROM2", 0, NULL);
+    SifLoadModule("rom0:ADDDRV", 0, NULL);
+    SifLoadModule("rom0:ADDROM2", 0, NULL);
 
-	//Initialize PlayStation Driver (PS1DRV)
-	PS1DRVInit();
+    //Initialize PlayStation Driver (PS1DRV)
+    PS1DRVInit();
 
-	//Initialize ROM DVD player.
-	//It is normal for this to fail on consoles that have no DVD ROM chip (i.e. DEX or the SCPH-10000/SCPH-15000).
-	DVDPlayerInit();
+    //Initialize ROM DVD player.
+    //It is normal for this to fail on consoles that have no DVD ROM chip (i.e. DEX or the SCPH-10000/SCPH-15000).
+    DVDPlayerInit();
 
-	LoadEROMDRV();
+    LoadEROMDRV();
 
-	/* Must be loaded last, after all devices have been initialized. */
-	SifExecModuleBuffer(SYSMAN_irx, size_SYSMAN_irx, 0, NULL, NULL);
+    /* Must be loaded last, after all devices have been initialized. */
+    SifExecModuleBuffer(SYSMAN_irx, size_SYSMAN_irx, 0, NULL, NULL);
 
-	SysmanInit();
+    SysmanInit();
 
-	GetPeripheralInformation(SystemInitParams->SystemInformation);
+    GetPeripheralInformation(SystemInitParams->SystemInformation);
 
-	SignalSema(SystemInitParams->InitCompleteSema);
-	ExitDeleteThread();
+    SignalSema(SystemInitParams->InitCompleteSema);
+    ExitDeleteThread();
 }
 
 int VBlankStartSema;
 
-static int VBlankStartHandler(int cause){
-	ee_sema_t sema;
-	iReferSemaStatus(VBlankStartSema, &sema);
-	if(sema.count<sema.max_count) iSignalSema(VBlankStartSema);
+static int VBlankStartHandler(int cause)
+{
+    ee_sema_t sema;
+    iReferSemaStatus(VBlankStartSema, &sema);
+    if (sema.count < sema.max_count)
+        iSignalSema(VBlankStartSema);
 
-	return 0;
+    return 0;
 }
 
 extern int UsbReadyStatus;
 
-static void usb_callback(void *packet, void *common){
-	UsbReadyStatus = (((SifCmdHeader_t*)packet)->opt == USBMASS_DEV_EV_CONN) ? 1 : 0;
+static void usb_callback(void *packet, void *common)
+{
+    UsbReadyStatus = (((SifCmdHeader_t *)packet)->opt == USBMASS_DEV_EV_CONN) ? 1 : 0;
 }
 
-int main(int argc, char *argv[]){
-	static SifCmdHandlerData_t SifCmdbuffer;
-	static struct SystemInformation SystemInformation;
-	void *SysInitThreadStack;
-	ee_sema_t ThreadSema;
-	int SystemInitSema;
-	unsigned int FrameNum;
-	struct SystemInitParams InitThreadParams;
+int main(int argc, char *argv[])
+{
+    static SifCmdHandlerData_t SifCmdbuffer;
+    static struct SystemInformation SystemInformation;
+    void *SysInitThreadStack;
+    ee_sema_t ThreadSema;
+    int SystemInitSema;
+    unsigned int FrameNum;
+    struct SystemInitParams InitThreadParams;
 
-//	chdir("mass:/PS2Ident/");
-	if(argc<1 || GetBootDeviceID()==BOOT_DEVICE_UNKNOWN){
-		Exit(-1);
-	}
+    //	chdir("mass:/PS2Ident/");
+    if (argc < 1 || GetBootDeviceID() == BOOT_DEVICE_UNKNOWN)
+    {
+        Exit(-1);
+    }
 
-	SifInitRpc(0);
-	while(!SifIopRebootBuffer(IOPRP_img, size_IOPRP_img)){};
+    SifInitRpc(0);
+    while (!SifIopRebootBuffer(IOPRP_img, size_IOPRP_img)) {};
 
-	memset(&SystemInformation, 0, sizeof(SystemInformation));
+    memset(&SystemInformation, 0, sizeof(SystemInformation));
 
-	/* Go gather some information from the EE's peripherals while the IOP reset. */
-	GetEEInformation(&SystemInformation);
+    /* Go gather some information from the EE's peripherals while the IOP reset. */
+    GetEEInformation(&SystemInformation);
 
-	InitCRC16LookupTable();
+    InitCRC16LookupTable();
 
-	ThreadSema.init_count=0;
-	ThreadSema.max_count=1;
-	ThreadSema.attr=ThreadSema.option=0;
-	InitThreadParams.InitCompleteSema=SystemInitSema=CreateSema(&ThreadSema);
-	InitThreadParams.SystemInformation=&SystemInformation;
+    ThreadSema.init_count = 0;
+    ThreadSema.max_count  = 1;
+    ThreadSema.attr = ThreadSema.option = 0;
+    InitThreadParams.InitCompleteSema = SystemInitSema = CreateSema(&ThreadSema);
+    InitThreadParams.SystemInformation                 = &SystemInformation;
 
-	SysInitThreadStack=memalign(64, SYSTEM_INIT_THREAD_STACK_SIZE);
+    SysInitThreadStack                                 = memalign(64, SYSTEM_INIT_THREAD_STACK_SIZE);
 
-	ThreadSema.init_count=0;
-	ThreadSema.max_count=1;
-	ThreadSema.attr=ThreadSema.option=0;
-	VBlankStartSema=CreateSema(&ThreadSema);
+    ThreadSema.init_count                              = 0;
+    ThreadSema.max_count                               = 1;
+    ThreadSema.attr = ThreadSema.option = 0;
+    VBlankStartSema                     = CreateSema(&ThreadSema);
 
-	AddIntcHandler(kINTC_VBLANK_START, &VBlankStartHandler, 0);
-	EnableIntc(kINTC_VBLANK_START);
+    AddIntcHandler(kINTC_VBLANK_START, &VBlankStartHandler, 0);
+    EnableIntc(kINTC_VBLANK_START);
 
-	while(!SifIopSync()){};
+    while (!SifIopSync()) {};
 
-	SifInitRpc(0);
-	SifInitIopHeap();
-	SifLoadFileInit();
-	fioInit();
+    SifInitRpc(0);
+    SifInitIopHeap();
+    SifLoadFileInit();
+    fioInit();
 
-	sbv_patch_enable_lmb();
-	sbv_patch_fileio();
+    sbv_patch_enable_lmb();
+    sbv_patch_fileio();
 
-	SifExecModuleBuffer(SIO2MAN_irx, size_SIO2MAN_irx, 0, NULL, NULL);
-	SifExecModuleBuffer(MCMAN_irx, size_MCMAN_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(SIO2MAN_irx, size_SIO2MAN_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(MCMAN_irx, size_MCMAN_irx, 0, NULL, NULL);
 
-	SifSetCmdBuffer(&SifCmdbuffer, 1);
-	SifAddCmdHandler(0, &usb_callback, NULL);
+    SifSetCmdBuffer(&SifCmdbuffer, 1);
+    SifAddCmdHandler(0, &usb_callback, NULL);
 
-	SifExecModuleBuffer(USBD_irx, size_USBD_irx, 0, NULL, NULL);
-	SifExecModuleBuffer(USBHDFSD_irx, size_USBHDFSD_irx, 0, NULL, NULL);
-	SifExecModuleBuffer(USBHDFSDFSV_irx, size_USBHDFSDFSV_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(USBD_irx, size_USBD_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(USBHDFSD_irx, size_USBHDFSD_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(USBHDFSDFSV_irx, size_USBHDFSDFSV_irx, 0, NULL, NULL);
 
-	sceCdInit(SCECdINoD);
-	cdInitAdd();
+    sceCdInit(SCECdINoD);
+    cdInitAdd();
 
-	//Initialize system paths.
-	OSDInitSystemPaths();
+    //Initialize system paths.
+    OSDInitSystemPaths();
 
-	//Initialize ROM version (must be done first).
-	OSDInitROMVER();
+    //Initialize ROM version (must be done first).
+    OSDInitROMVER();
 
-	if(InitializeUI(0)!=0){
-		SifExitRpc();
-		Exit(-1);
-	}
+    if (InitializeUI(0) != 0)
+    {
+        SifExitRpc();
+        Exit(-1);
+    }
 
-	DEBUG_PRINTF("Loading database.\n");
+    DEBUG_PRINTF("Loading database.\n");
 
-	PS2IDBMS_LoadDatabase("PS2Ident.db");
+    PS2IDBMS_LoadDatabase("PS2Ident.db");
 
-	DEBUG_PRINTF("Initializing hardware...");
+    DEBUG_PRINTF("Initializing hardware...");
 
-	SysCreateThread(&SystemInitThread, SysInitThreadStack, SYSTEM_INIT_THREAD_STACK_SIZE, &InitThreadParams, 0x2);
+    SysCreateThread(&SystemInitThread, SysInitThreadStack, SYSTEM_INIT_THREAD_STACK_SIZE, &InitThreadParams, 0x2);
 
-	FrameNum=0;
-	while(PollSema(SystemInitSema)!=SystemInitSema){
-		RedrawLoadingScreen(FrameNum);
-		FrameNum++;
-	}
-	DeleteSema(SystemInitSema);
-	free(SysInitThreadStack);
+    FrameNum = 0;
+    while (PollSema(SystemInitSema) != SystemInitSema)
+    {
+        RedrawLoadingScreen(FrameNum);
+        FrameNum++;
+    }
+    DeleteSema(SystemInitSema);
+    free(SysInitThreadStack);
 
-	SifLoadFileExit();
-	SifExitIopHeap();
+    SifLoadFileExit();
+    SifExitIopHeap();
 
-	DEBUG_PRINTF("System init: Initializing RPCs.\n");
+    DEBUG_PRINTF("System init: Initializing RPCs.\n");
 
-	PadInitPads();
-	mcInit(MC_TYPE_XMC);
+    PadInitPads();
+    mcInit(MC_TYPE_XMC);
 
-	DEBUG_PRINTF("done!\nEntering main menu.\n");
+    DEBUG_PRINTF("done!\nEntering main menu.\n");
 
-	MainMenu(&SystemInformation);
+    MainMenu(&SystemInformation);
 
-	PadDeinitPads();
+    PadDeinitPads();
 
-	DisableIntc(kINTC_VBLANK_START);
-	RemoveIntcHandler(kINTC_VBLANK_START, 0);
-	DeleteSema(VBlankStartSema);
-	SifRemoveCmdHandler(0);
+    DisableIntc(kINTC_VBLANK_START);
+    RemoveIntcHandler(kINTC_VBLANK_START, 0);
+    DeleteSema(VBlankStartSema);
+    SifRemoveCmdHandler(0);
 
-	DeinitializeUI();
+    DeinitializeUI();
 
-	PS2IDBMS_UnloadDatabase();
+    PS2IDBMS_UnloadDatabase();
 
-	sceCdInit(SCECdEXIT);
-	fioExit();
-	SysmanDeinit();
-	SifExitRpc();
+    sceCdInit(SCECdEXIT);
+    fioExit();
+    SysmanDeinit();
+    SifExitRpc();
 
-	return 0;
+    return 0;
 }

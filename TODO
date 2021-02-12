@@ -2,6 +2,15 @@
 - add summary page (with contributor levels - text log, sticker, dissasembly, ROM dumps)
 - add ROM database (BOOT and DVD), mostly for redump database
 - add ability to store BOOTrom EXTINFO field into text log file
-- add additional field for network adapters for FAT models (including non-official)
+- store BOOT not as crc but as datecode from EXTINFO field
+- store DVD not as crc but as DVD player version
+- crc values can be used for detecting modchips
+- store PS1Drv version into database
 - add ability to dump keys (all serials + HDD key) into separate file
 - fix DVD EROM detection on slim consoles
+- add DSP chip detection
+- add additional field for network adapters for FAT models (including non-official)
+- split network adapter, so al possible official adapters will be shown
+- or at least add gamestar detection
+- add first 3 bytes of MAC address into database
+- 

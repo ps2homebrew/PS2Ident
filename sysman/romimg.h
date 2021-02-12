@@ -17,14 +17,16 @@
 	All sections and files are (must be?) aligned to 16-byte boundaries, and all records within each section must be aligned to 4-byte boundaries.
 */
 
-struct RomImgData{
-	const void *ImageStart;
-	const void *RomdirStart;
-	const void *RomdirEnd;
+struct RomImgData
+{
+    const void *ImageStart;
+    const void *RomdirStart;
+    const void *RomdirEnd;
 };
 
-struct RomDirEntry{
-	char name[10];
-	u16 ExtInfoEntrySize;
-	u32 size;
+struct RomDirEntry
+{
+    char name[10];
+    u16 ExtInfoEntrySize;
+    u32 size;
 };

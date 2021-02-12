@@ -1,19 +1,21 @@
-#define SYSMAN_RPC_NUM	0x00003913
+#define SYSMAN_RPC_NUM    0x00003913
 
-#define MEM_IO_BLOCK_SIZE	131072
+#define MEM_IO_BLOCK_SIZE 131072
 
-struct MemoryAccessParameters{
-	void *StartAddress;
-	void *buffer;
-	unsigned int NumBytes;
+struct MemoryAccessParameters
+{
+    void *StartAddress;
+    void *buffer;
+    unsigned int NumBytes;
 };
 
 /* RPC function numbers */
-enum SYSMAN_RPC_Functions{
-	SYSMAN_ReadMemory	= 0x01,
-	SYSMAN_WriteMemory,
-	SYSMAN_CalcROMRegionSize,
-	SYSMAN_CalcROMChipSize,
-	SYSMAN_GetHardwareInfo,
-	SYSMAN_GetMACAddress
+enum SYSMAN_RPC_Functions
+{
+    SYSMAN_ReadMemory = 0x01,
+    SYSMAN_WriteMemory,
+    SYSMAN_CalcROMRegionSize,
+    SYSMAN_CalcROMChipSize,
+    SYSMAN_GetHardwareInfo,
+    SYSMAN_GetMACAddress
 };
