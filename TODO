@@ -13,4 +13,7 @@
 - split network adapter, so al possible official adapters will be shown
 - or at least add gamestar detection
 - add first 3 bytes of MAC address into database
-- 
+- DTL-H3010x will report error bit when SCMD 03:00 is called. Add a switch for ignroing it
+- DTL SCMD 03:00 will add one byte (taken from NVraM), but mecha firmware is the same. Ignore the difference.
+- `MECACON_V00020800_` official version numbering
+- M Renewal date - Mechacon timestamp, unique for firmware. Should correlate with mechacon version.
