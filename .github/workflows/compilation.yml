@@ -60,8 +60,29 @@ jobs:
           name: PS2IDBMS
           path: PS2IDBMS/Release/PS2IDBMS.exe
 
+  build-romimg:
+    name: ROMIMG compilation
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup msbuild
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Build
+        run: |
+          cd ROMIMG
+          msbuild /p:PlatformToolset=v142 /p:Configuration=Release
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ROMIMG
+          path: ROMIMG/Release/ROMIMG.exe
+
   release:
-    needs: [build, build-ps2idbms]
+    needs: [build, build-ps2idbms, build-romimg]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master'
     steps:
@@ -83,6 +104,11 @@ jobs:
       with:
         name: PS2IDBMS
 
+    - name: Download romimg artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: ROMIMG
+
     - name: Create pre-release
       if: github.ref == 'refs/heads/master'
       uses: marvinpinto/action-automatic-releases@latest
@@ -92,8 +118,9 @@ jobs:
         automatic_release_tag: "latest"
         title: "Development build"
         files: |
-          PS2IDBMS.exe
           PS2Ident.elf
+          PS2IDBMS.exe
+          ROMIMG.exe
 
     - name: Create Tagged Release Draft
       if: startsWith(github.ref, 'refs/tags/v')
@@ -103,5 +130,6 @@ jobs:
         prerelease: false
         draft: true
         files: |
-          PS2IDBMS.exe
           PS2Ident.elf
+          PS2IDBMS.exe
+          ROMIMG.exe

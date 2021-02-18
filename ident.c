@@ -45,9 +45,9 @@ int GetEEInformation(struct SystemInformation *SystemInformation)
     unsigned short int revision;
     unsigned int value;
 
-    revision                                          = GetCop0(15);
-    SystemInformation->mainboard.ee.implementation    = revision >> 8;
-    SystemInformation->mainboard.ee.revision          = revision & 0xFF;
+    revision                                       = GetCop0(15);
+    SystemInformation->mainboard.ee.implementation = revision >> 8;
+    SystemInformation->mainboard.ee.revision       = revision & 0xFF;
 
     asm("cfc1 %0, $0\n"
         : "=r"(revision)
