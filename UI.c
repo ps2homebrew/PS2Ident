@@ -1194,7 +1194,7 @@ static void UITransitionSlideRightIn(struct UIMenu *menu, int SelectedOption)
 {
     int i;
 
-    for (i = 15; i > 0; i--)
+    for (i = 15; i >= 0; i--)
     {
         UIDrawMenu(menu, i, UI_OFFSET_X + i * 48, UI_OFFSET_Y, SelectedOption);
         SyncFlipFB(&UIDrawGlobal);
@@ -1205,7 +1205,7 @@ static void UITransitionSlideLeftIn(struct UIMenu *menu, int SelectedOption)
 {
     int i;
 
-    for (i = 15; i > 0; i--)
+    for (i = 15; i >= 0; i--)
     {
         UIDrawMenu(menu, i, UI_OFFSET_X + -i * 48, UI_OFFSET_Y, SelectedOption);
         SyncFlipFB(&UIDrawGlobal);
@@ -1240,7 +1240,7 @@ static void UITransitionFadeOut(struct UIMenu *menu, int SelectedOption)
     rgbaq.b = 0;
     rgbaq.q = 0;
 
-    for (i = 15; i > 0; i--)
+    for (i = 15; i >= 0; i--)
     {
         rgbaq.a = 0x80 - (i * 8);
         UIDrawMenu(menu, i, UI_OFFSET_X, UI_OFFSET_Y, SelectedOption);

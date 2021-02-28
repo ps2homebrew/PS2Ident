@@ -51,6 +51,7 @@ const char *GetChassisDesc(const struct PS2IDBMainboardEntry *SystemInformation)
 const char *GetModelIDDesc(unsigned int id);
 const char *GetEMCSIDDesc(unsigned char id);
 const char *GetADD010Desc(unsigned short int id);
+const char *GetDSPDesc(unsigned char revision);
 
 int GetADD010(u16 address, u16 *word);
 

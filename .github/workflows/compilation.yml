@@ -35,7 +35,14 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}
-        path: PS2Ident.elf
+        path: |
+          lang/
+          licenses/
+          PS2Ident.elf
+          PS2Ident.db
+          README.md
+          changelog.txt
+
     # 'path' will create artifact with all *.elf in working directory
     # you can change this
 
@@ -98,6 +105,11 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}
+        path: PS2Ident
+
+    - name: Prepare PS2Ident archive
+      run: |
+        7z a ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}.7z PS2Ident/*
 
     - name: Download ps2idbms artifact
       uses: actions/download-artifact@v2
@@ -118,7 +130,7 @@ jobs:
         automatic_release_tag: "latest"
         title: "Development build"
         files: |
-          PS2Ident.elf
+          ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}.7z
           PS2IDBMS.exe
           ROMIMG.exe
 
@@ -130,6 +142,6 @@ jobs:
         prerelease: false
         draft: true
         files: |
-          PS2Ident.elf
+          ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}.7z
           PS2IDBMS.exe
           ROMIMG.exe

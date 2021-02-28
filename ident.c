@@ -109,9 +109,9 @@ int CheckROM(const struct PS2IDBMainboardEntry *entry)
         {
             printf("CheckROM: ROM mismatch:\n");
             if (entry->BOOT_ROM.IsExists)
-                printf("\tBOOT: 0x%04x 0x%04x\n", other->BOOT_ROM.crc16, entry->BOOT_ROM.crc16);
+                printf("    BOOT: 0x%04x 0x%04x\n", other->BOOT_ROM.crc16, entry->BOOT_ROM.crc16);
             if (other->DVD_ROM.IsExists)
-                printf("\tDVD: 0x%04x 0x%04x\n", other->DVD_ROM.crc16, entry->DVD_ROM.crc16);
+                printf("    DVD: 0x%04x 0x%04x\n", other->DVD_ROM.crc16, entry->DVD_ROM.crc16);
 
             return 1;
         }
@@ -195,8 +195,12 @@ int GetPeripheralInformation(struct SystemInformation *SystemInformation)
 
     if (sceCdAltMV(SystemInformation->mainboard.MECHACONVersion, &stat) == 0 || (stat & 0x80) != 0)
     {
-        printf("Failed to read MECHACON version. Stat: %x\n", stat);
-        SystemInformation->mainboard.status |= PS2IDB_STAT_ERR_MVER;
+        // ignore stat on 0150 bootroms. Late DTL-H3010x set errored stat & 0x80, which is not true
+        if (!strncmp(SystemInformation->mainboard.romver, "0150", 4))
+        {
+            printf("Failed to read MECHACON version. Stat: %x\n", stat);
+            SystemInformation->mainboard.status |= PS2IDB_STAT_ERR_MVER;
+        }
     }
     if (sceGetDspVersion(SystemInformation->DSPVersion, &stat) == 0 || (stat & 0x80) != 0)
     {
@@ -608,7 +612,7 @@ const char *GetMainboardModelDesc(const struct PS2IDBMainboardEntry *SystemInfor
     if ((ModelData = PS2IDBMS_LookupMainboardModel(SystemInformation)) != NULL)
         description = ModelData->MainboardName;
     else if (!strncmp(SystemInformation->romver, "0170", 4) || !strncmp(SystemInformation->romver, "0190", 4))
-        description = "Missing Sticker"; //SCPH-5xxxx can be retrieved from sticker
+        description = "Sticker"; //SCPH-5xxxx can be retrieved from sticker
     else
         description = "Missing";
 
@@ -671,7 +675,7 @@ const char *GetChassisDesc(const struct PS2IDBMainboardEntry *SystemInformation)
     else if (!strncmp(SystemInformation->MainboardName, "XPD-", 4))
         description = "X-chassis"; //PSX
     else if (!strncmp(SystemInformation->romver, "0170", 4) || !strncmp(SystemInformation->romver, "0190", 4))
-        description = "Missing Sticker"; //SCPH-5xxxx can be retrieved from sticker
+        description = "Sticker"; //SCPH-5xxxx can be retrieved from sticker
     else
         description = "Unknown";
 
@@ -684,7 +688,7 @@ const char *GetModelIDDesc(unsigned int id)
 
     if ((description = PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_MODEL_ID, id)) == NULL)
     {
-        description = "Missing Sticker";
+        description = "Sticker";
     }
 
     return description;
@@ -696,7 +700,7 @@ const char *GetEMCSIDDesc(unsigned char id)
 
     if ((description = PS2IDBMS_LookupComponentModel(PS2IDB_COMPONENT_EMCS_ID, id)) == NULL)
     {
-        description = "Missing Sticker";
+        description = "Sticker";
     }
 
     return description;
@@ -712,6 +716,21 @@ const char *GetADD010Desc(unsigned short int id)
     }
 
     return description;
+}
+
+const char *GetDSPDesc(unsigned char revision)
+{
+    static const char *revisions[] = {
+        "CXD1869Q",
+        "CXD1869AQ",
+        "CXD1869BQ/CXD1886Q-1/CXD1886",
+        "CXD3098Q",
+        "Missing"};
+
+    if (revision > 4)
+        revision = 4;
+
+    return revisions[revision];
 }
 
 unsigned int CalculateCPUCacheSize(unsigned char value)
@@ -733,19 +752,19 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
           " "__TIME__
           "\r\n\r\n",
           stream);
-    fprintf(stream, "ROMVER:\t%s\r\n", SystemInformation->mainboard.romver);
+    fprintf(stream, "ROMVER:            %s\r\n", SystemInformation->mainboard.romver);
 
     //ROM region sizes
     fprintf(stream, "ROM region sizes:\r\n");
     for (i = 0; i <= 2; i++)
     {
-        fprintf(stream, "\tROM%u:\t", i);
+        fprintf(stream, "    ROM%u:          ", i);
         if (SystemInformation->ROMs[i].IsExists)
             fprintf(stream, "%p (%u bytes)\r\n", SystemInformation->ROMs[i].StartAddress, SystemInformation->ROMs[i].size);
         else
             fputs("<Not detected>\r\n", stream);
     }
-    fprintf(stream, "\tEROM:\t");
+    fprintf(stream, "    EROM:          ");
     if (SystemInformation->erom.IsExists)
         fprintf(stream, "%p (%u bytes)\r\n", SystemInformation->erom.StartAddress, SystemInformation->erom.size);
     else
@@ -753,21 +772,21 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
 
     //Physical ROM chip sizes
     fputs("ROM chip sizes:\r\n"
-          "\tBoot ROM:\t",
+          "    Boot ROM:      ",
           stream);
     if (SystemInformation->mainboard.BOOT_ROM.IsExists)
     {
-        fprintf(stream, "%p (%u Mbit)\tCRC16: 0x%04x\r\n",
+        fprintf(stream, "%p (%u Mbit)    CRC16: 0x%04x\r\n",
                 SystemInformation->mainboard.BOOT_ROM.StartAddress, SystemInformation->mainboard.BOOT_ROM.size / 1024 / 128,
                 SystemInformation->mainboard.BOOT_ROM.crc16);
     }
     else
         fputs("<Not detected>\r\n", stream);
 
-    fputs("\tDVD ROM:\t", stream);
+    fputs("    DVD ROM:       ", stream);
     if (SystemInformation->mainboard.DVD_ROM.IsExists)
     {
-        fprintf(stream, "%p (%u Mbit)\tCRC16: 0x%04x\r\n",
+        fprintf(stream, "%p (%u Mbit)    CRC16: 0x%04x\r\n",
                 SystemInformation->mainboard.DVD_ROM.StartAddress, SystemInformation->mainboard.DVD_ROM.size / 1024 / 128,
                 SystemInformation->mainboard.DVD_ROM.crc16);
     }
@@ -776,85 +795,100 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
 
     //Version numbers
     dvdplVer = SystemInformation->DVDPlayerVer[0] == '\0' ? "-" : SystemInformation->DVDPlayerVer;
-    fprintf(stream, "DVD Player:\t%s\r\n"
-                    "PS1DRV:\t\t%s\r\n",
+    fprintf(stream, "    DVD Player:    %s\r\n"
+                    "PS1DRV:            %s\r\n",
             dvdplVer, SystemInformation->PS1DRVVer);
 
     //Chip revisions
-    fprintf(stream, "EE:\r\n"
-                    "\tImplementation:\t\t0x%02x\r\n"
-                    "\tRevision:\t\t%u.%u (%s)\r\n"
-                    "\tEE_F520:\t\t0x%08x\r\n"
-                    "\tEE_F540:\t\t0x%08x\r\n"
-                    "\tEE_F550:\t\t0x%08x\r\n"
-                    "\tFPU implementation:\t0x%02x\r\n"
-                    "\tFPU revision:\t\t%u.%u\r\n"
-                    "\tICache size:\t\t0x%02x (%u KB)\r\n"
-                    "\tDCache size:\t\t0x%02x (%u KB)\r\n"
-                    "\tRAM size:\t\t%u bytes\r\n",
+    fprintf(stream, "EE/GS:\r\n"
+                    "    Implementation:      0x%02x\r\n"
+                    "    Revision:            %u.%u (%s)\r\n"
+                    "    EE_F520:             0x%08x\r\n"
+                    "    EE_F540:             0x%08x\r\n"
+                    "    EE_F550:             0x%08x\r\n"
+                    "    FPU implementation:  0x%02x\r\n"
+                    "    FPU revision:        %u.%u\r\n"
+                    "    ICache size:         0x%02x (%u KB)\r\n"
+                    "    DCache size:         0x%02x (%u KB)\r\n"
+                    "    RAM size:            %u bytes\r\n"
+                    "    GS revision:         %u.%02u (%s)\r\n"
+                    "    GS ID:               0x%02x\r\n",
             SystemInformation->mainboard.ee.implementation, SystemInformation->mainboard.ee.revision >> 4, SystemInformation->mainboard.ee.revision & 0xF, GetEEChipDesc((unsigned short int)(SystemInformation->mainboard.ee.implementation) << 8 | SystemInformation->mainboard.ee.revision),
             SystemInformation->EE_F520, SystemInformation->EE_F540, SystemInformation->EE_F550,
             SystemInformation->mainboard.ee.FPUImplementation, SystemInformation->mainboard.ee.FPURevision >> 4, SystemInformation->mainboard.ee.FPURevision & 0xF,
             SystemInformation->mainboard.ee.ICacheSize, CalculateCPUCacheSize(SystemInformation->mainboard.ee.ICacheSize) / 1024,
             SystemInformation->mainboard.ee.DCacheSize, CalculateCPUCacheSize(SystemInformation->mainboard.ee.DCacheSize) / 1024,
-            SystemInformation->mainboard.ee.RAMSize);
+            SystemInformation->mainboard.ee.RAMSize,
+            SystemInformation->mainboard.gs.revision >> 4, SystemInformation->mainboard.gs.revision & 0xF,
+            GetGSChipDesc((u16)(SystemInformation->mainboard.gs.id) << 8 | SystemInformation->mainboard.gs.revision),
+            SystemInformation->mainboard.gs.id);
 
     fprintf(stream, "IOP:\r\n"
-                    "\tRevision:\t\t0x%04x (%s)\r\n"
-                    "\tRAM size:\t\t%u bytes\r\n"
-                    "\tSSBUS I/F revision:\t%u.%u (%s)\r\n",
-            SystemInformation->mainboard.iop.revision,
-            GetIOPChipDesc(SystemInformation->mainboard.iop.revision), SystemInformation->mainboard.iop.RAMSize,
+                    "    Implementation:      0x%02x\r\n"
+                    "    Revision:            %u.%u (%s)\r\n"
+                    "    RAM size:            %u bytes\r\n"
+                    "    SSBUS I/F revision:  %u.%u (%s)\r\n",
+            SystemInformation->mainboard.iop.revision >> 8,
+            (SystemInformation->mainboard.iop.revision & 0xFF) >> 4, SystemInformation->mainboard.iop.revision & 0xF, GetIOPChipDesc(SystemInformation->mainboard.iop.revision),
+            SystemInformation->mainboard.iop.RAMSize,
             SystemInformation->mainboard.ssbus.revision >> 4, SystemInformation->mainboard.ssbus.revision & 0xF,
             GetSSBUSIFDesc(SystemInformation->mainboard.ssbus.revision));
 
-    fputs("\tAIF revision:\t\t", stream);
+    fputs("    AIF revision:        ", stream);
     if (SystemInformation->mainboard.ssbus.status & PS2DB_SSBUS_HAS_AIF)
         fprintf(stream, "%u\r\n", SystemInformation->mainboard.ssbus.AIFRevision);
     else
         fputs("<Not detected>\r\n", stream);
 
+    if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MVER))
+    {
+        fprintf(stream, "MECHACON:\r\n"
+                        "    Revision:            %u.%02u (%s)\r\n"
+                        "    MagicGate region:    0x%02x (%s)\r\n"
+                        "    System type:         0x%02x (%s)\r\n"
+                        "    DSP revision:        %u (%s)\r\n",
+                SystemInformation->mainboard.MECHACONVersion[1], SystemInformation->mainboard.MECHACONVersion[2], GetMECHACONChipDesc((unsigned int)(SystemInformation->mainboard.MECHACONVersion[1]) << 8 | (unsigned int)(SystemInformation->mainboard.MECHACONVersion[2])),
+                SystemInformation->mainboard.MECHACONVersion[0], GetRegionDesc(SystemInformation->mainboard.MECHACONVersion[0]),
+                SystemInformation->mainboard.MECHACONVersion[3], GetSystemTypeDesc(SystemInformation->mainboard.MECHACONVersion[3]),
+                SystemInformation->DSPVersion[1],GetDSPDesc(SystemInformation->DSPVersion[1]));
+    }
+    else
+    {
+        fputs("MECHACON:\r\n"
+              "    Revision:            -.-\r\n"
+              "    MagicGate region:    -\r\n"
+              "    System type:         -\r\n"
+              "    DSP revision:        -\r\n",
+              stream);
+    }
+
+    fprintf(stream, "    M Renewal Date:      ");
+    if (SystemInformation->mainboard.MECHACONVersion[1] < 5 || (SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MRENEWDATE))
+        fprintf(stream, "----/--/-- --:--\r\n");
+    else
+        fprintf(stream, "20%02x/%02x/%02x %02x:%02x\r\n", SystemInformation->mainboard.MRenewalDate[0], SystemInformation->mainboard.MRenewalDate[1], SystemInformation->mainboard.MRenewalDate[2], SystemInformation->mainboard.MRenewalDate[3], SystemInformation->mainboard.MRenewalDate[4]);
+
     fputs("Mainboard:\r\n"
-          "\tModel name:\t\t",
+          "    Model name:          ",
           stream);
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MNAME))
         fprintf(stream, "%s\r\n", SystemInformation->mainboard.ModelName);
     else
         fputs("-\r\n", stream);
 
-    fprintf(stream, "\tMainboard model:\t%s\r\n"
-                    "\tChassis:\t\t%s\r\n"
-                    "\tROMGEN:\t\t\t%04x-%04x\r\n"
-                    "\tMachine type:\t\t0x%08x\r\n"
-                    "\tBoardInf:\t\t0x%02x (%s)\r\n"
-                    "\tMPU Board ID:\t\t0x%04x\r\n"
-                    "\tSPU2 revision:\t\t0x%02x (%s)\r\n",
+    fprintf(stream, "    Mainboard model:     %s\r\n"
+                    "    Chassis:             %s\r\n"
+                    "    ROMGEN:              %04x-%04x\r\n"
+                    "    Machine type:        0x%08x\r\n"
+                    "    BoardInf:            0x%02x (%s)\r\n"
+                    "    MPU Board ID:        0x%04x\r\n"
+                    "    SPU2 revision:       0x%02x (%s)\r\n",
             SystemInformation->mainboard.MainboardName, SystemInformation->chassis,
             SystemInformation->mainboard.ROMGEN_MonthDate, SystemInformation->mainboard.ROMGEN_Year, SystemInformation->mainboard.MachineType,
             SystemInformation->mainboard.BoardInf, GetMRPDesc(SystemInformation->mainboard.BoardInf), SystemInformation->mainboard.MPUBoardID,
             SystemInformation->mainboard.spu2.revision, GetSPU2ChipDesc(SystemInformation->mainboard.spu2.revision));
 
-    if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MVER))
-    {
-        fprintf(stream, "\tMECHACON revision:\t%u.%02u (%s)\r\n"
-                        "\tDSP revision:\t\t%u\r\n"
-                        "\tMagicGate region:\t0x%02x (%s)\r\n"
-                        "\tSystem type:\t\t0x%02x (%s)\r\n",
-                SystemInformation->mainboard.MECHACONVersion[1], SystemInformation->mainboard.MECHACONVersion[2], GetMECHACONChipDesc((unsigned int)(SystemInformation->mainboard.MECHACONVersion[1]) << 8 | (unsigned int)(SystemInformation->mainboard.MECHACONVersion[2])),
-                SystemInformation->DSPVersion[1],
-                SystemInformation->mainboard.MECHACONVersion[0], GetRegionDesc(SystemInformation->mainboard.MECHACONVersion[0]),
-                SystemInformation->mainboard.MECHACONVersion[3], GetSystemTypeDesc(SystemInformation->mainboard.MECHACONVersion[3]));
-    }
-    else
-    {
-        fputs("\tMECHACON revision:\t-.-\r\n"
-              "\tDSP revision:\t-.-\r\ns"
-              "\tMagicGate region:\t-\r\n"
-              "\tSystem type:\t\t-\r\n",
-              stream);
-    }
-
-    fputs("\tADD0x010:\t\t", stream);
+    fputs("    ADD0x010:            ", stream);
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_ADD010))
     {
         fprintf(stream, "0x%04x (%s)\r\n",
@@ -865,14 +899,8 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
         fputs("-\r\n", stream);
     }
 
-    fprintf(stream, "\tM Renewal Date:\t\t");
-    if (SystemInformation->mainboard.MECHACONVersion[1] < 5 || (SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MRENEWDATE))
-        fprintf(stream, "----/--/-- --:--\r\n");
-    else
-        fprintf(stream, "20%02x/%02x/%02x %02x:%02x\r\n", SystemInformation->mainboard.MRenewalDate[0], SystemInformation->mainboard.MRenewalDate[1], SystemInformation->mainboard.MRenewalDate[2], SystemInformation->mainboard.MRenewalDate[3], SystemInformation->mainboard.MRenewalDate[4]);
-
-    //i.Link ID
-    fputs("\tModel ID:\t\t", stream);
+    //i.Link Model ID
+    fputs("    Model ID:            ", stream);
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_ILINKID))
     {
         modelID = SystemInformation->mainboard.ModelID[0] | SystemInformation->mainboard.ModelID[1] << 8 | SystemInformation->mainboard.ModelID[2] << 16;
@@ -883,53 +911,50 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
         fputs("-\r\n", stream);
     }
 
-    //Console ID
+    //SDMI Model ID (only 1 last byte, but we will keep 2 bytes)
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_CONSOLEID))
     {
         conModelID = SystemInformation->mainboard.ConModelID[0] | SystemInformation->mainboard.ConModelID[1] << 8;
-        fprintf(stream, "\tConsole Model ID:\t0x%04x\r\n"
-                        "\tEMCS ID:\t\t0x%02x (%s)\r\n",
+        fprintf(stream, "    SDMI Model ID:       0x%04x\r\n"
+                        "    EMCS ID:             0x%02x (%s)\r\n",
                 conModelID,
                 SystemInformation->mainboard.EMCSID,
                 GetEMCSIDDesc(SystemInformation->mainboard.EMCSID));
     }
     else
     {
-        fputs("\tConsole Model ID:\t-\r\n"
-              "\tEMCS ID:\t\t-\r\n",
+        fputs("    SDMI Model ID:       -\r\n"
+              "    EMCS ID:             -\r\n",
               stream);
     }
 
-    fprintf(stream, "\tUSB HC revision:\t%u.%u\r\n"
-                    "\tGS revision:\t\t%u.%u (%s)\r\n"
-                    "\tGS ID:\t\t\t0x%02x\r\n",
-            SystemInformation->mainboard.usb.HcRevision >> 4, SystemInformation->mainboard.usb.HcRevision & 0xF,
-            SystemInformation->mainboard.gs.revision >> 4, SystemInformation->mainboard.gs.revision & 0xF,
-            GetGSChipDesc((u16)(SystemInformation->mainboard.gs.id) << 8 | SystemInformation->mainboard.gs.revision),
-            SystemInformation->mainboard.gs.id);
-
+    fprintf(stream, "    USB HC revision:     %u.%u\r\n",
+            SystemInformation->mainboard.usb.HcRevision >> 4, SystemInformation->mainboard.usb.HcRevision & 0xF);
 
     if (SystemInformation->mainboard.ssbus.status & PS2DB_SSBUS_HAS_SPEED)
     {
-        fprintf(stream, "\tSPEED revision:\t\t0x%04x (%s)\r\n"
-                        "\tSPEED capabilities:\t%04x.%04x (%s)\r\n",
+        fprintf(stream, "Network:\r\n"
+                        "    MAC vendor:          0x%02x:0x%02x:0x%02x\r\n"
+                        "    SPEED revision:      0x%04x (%s)\r\n"
+                        "    SPEED capabilities:  %04x.%04x (%s)\r\n",
+                SystemInformation->SMAP_MAC_address[0],SystemInformation->SMAP_MAC_address[1],SystemInformation->SMAP_MAC_address[2],
                 SystemInformation->mainboard.ssbus.SPEED.rev1, GetSPEEDDesc(SystemInformation->mainboard.ssbus.SPEED.rev1), SystemInformation->mainboard.ssbus.SPEED.rev3, SystemInformation->mainboard.ssbus.SPEED.rev8, GetSPEEDCapsDesc(SystemInformation->mainboard.ssbus.SPEED.rev3));
-        fprintf(stream, "\tPHY OUI:\t\t0x%06x (%s)\r\n"
-                        "\tPHY model:\t\t0x%02x (%s)\r\n"
-                        "\tPHY revision:\t\t0x%02x\r\n",
+        fprintf(stream, "    PHY OUI:             0x%06x (%s)\r\n"
+                        "    PHY model:           0x%02x (%s)\r\n"
+                        "    PHY revision:        0x%02x\r\n",
                 SystemInformation->mainboard.ssbus.SPEED.SMAP_PHY_OUI, GetPHYVendDesc(SystemInformation->mainboard.ssbus.SPEED.SMAP_PHY_OUI), SystemInformation->mainboard.ssbus.SPEED.SMAP_PHY_VMDL, GetPHYModelDesc(SystemInformation->mainboard.ssbus.SPEED.SMAP_PHY_OUI, SystemInformation->mainboard.ssbus.SPEED.SMAP_PHY_VMDL), SystemInformation->mainboard.ssbus.SPEED.SMAP_PHY_REV);
     }
     else
     {
-        fprintf(stream, "\t***No expansion device connected***\r\n");
+        fprintf(stream, "Network:\r\n    ***No expansion device connected***\r\n");
     }
 
     fprintf(stream, "i.Link:\r\n"
-                    "\tPorts:\t\t\t%u\r\n"
-                    "\tMax speed:\t\t%u (%s)\r\n"
-                    "\tCompliance level:\t%u (%s)\r\n"
-                    "\tVendor ID:\t\t0x%06x (%s)\r\n"
-                    "\tProduct ID:\t\t0x%06x\r\n",
+                    "    Ports:               %u\r\n"
+                    "    Max speed:           %u (%s)\r\n"
+                    "    Compliance level:    %u (%s)\r\n"
+                    "    Vendor ID:           0x%06x (%s)\r\n"
+                    "    Product ID:          0x%06x\r\n",
             SystemInformation->mainboard.iLink.NumPorts,
             SystemInformation->mainboard.iLink.MaxSpeed,
             GetiLinkSpeedDesc(SystemInformation->mainboard.iLink.MaxSpeed),
@@ -944,19 +969,19 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
         fprintf(stream, "Remarks:\r\n");
 
         if (SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MVER)
-            fprintf(stream, "\tUnable to get MECHACON version.\r\n");
+            fprintf(stream, "    Unable to get MECHACON version.\r\n");
         if (SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MNAME)
-            fprintf(stream, "\tUnable to get model name.\r\n");
+            fprintf(stream, "    Unable to get model name.\r\n");
         if (SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MRENEWDATE)
-            fprintf(stream, "\tUnable to get M renewal date.\r\n");
+            fprintf(stream, "    Unable to get M renewal date.\r\n");
         if (SystemInformation->mainboard.status & PS2IDB_STAT_ERR_ILINKID)
-            fprintf(stream, "\tUnable to get i.Link ID.\r\n");
+            fprintf(stream, "    Unable to get i.Link ID.\r\n");
         if (SystemInformation->mainboard.status & PS2IDB_STAT_ERR_CONSOLEID)
-            fprintf(stream, "\tUnable to get console ID.\r\n");
+            fprintf(stream, "    Unable to get console ID.\r\n");
         if (SystemInformation->mainboard.status & PS2IDB_STAT_ERR_ADD010)
-            fprintf(stream, "\tUnable to get ADD0x010.\r\n");
+            fprintf(stream, "    Unable to get ADD0x010.\r\n");
         if (MayBeModded)
-            fprintf(stream, "\tROM may not be clean.\r\n");
+            fprintf(stream, "    ROM may not be clean.\r\n");
     }
 
     return 0;
