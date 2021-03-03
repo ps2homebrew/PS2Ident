@@ -43,6 +43,26 @@ jobs:
           README.md
           changelog.txt
 
+    - name: Compile PCSX2 version
+      continue-on-error: true
+      run: |
+        make clean
+        make DEBUG=1 DSNET_HOST_SUPPORT=1 DISABLE_ILINK_DUMPING=1
+
+    - name: Upload DEBUG artifacts
+      if: ${{ success() }}
+      continue-on-error: true
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PCSX2
+        path: |
+          lang/
+          licenses/
+          PS2Ident.elf
+          PS2Ident.db
+          README.md
+          changelog.txt
+
     # 'path' will create artifact with all *.elf in working directory
     # you can change this
 

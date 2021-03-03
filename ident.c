@@ -223,6 +223,8 @@ int GetPeripheralInformation(struct SystemInformation *SystemInformation)
             printf("Failed to read M Renewal Date. Stat: %x\n", result);
             SystemInformation->mainboard.status |= PS2IDB_STAT_ERR_MRENEWDATE;
         }
+        /*mechacon 5.8 and 5.9 are the same chip patched with dex flag, so 5.8 and 5.9 -> 5.8 */
+        SystemInformation->mainboard.MECHACONVersion[2] = SystemInformation->mainboard.MECHACONVersion[2] & 0xFE;
     }
     SysmanGetMACAddress(SystemInformation->SMAP_MAC_address);
 
