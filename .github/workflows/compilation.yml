@@ -95,18 +95,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Setup msbuild
-        uses: microsoft/setup-msbuild@v1.0.2
+      # - name: Setup msbuild
+        # uses: microsoft/setup-msbuild@v1.0.2
 
-      - name: Build
-        run: |
-          cd ROMIMG
-          msbuild /p:PlatformToolset=v142 /p:Configuration=Release
+      # - name: Build
+        # run: |
+          # cd ROMIMG
+          # msbuild /p:PlatformToolset=v142 /p:Configuration=Release
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ROMIMG
-          path: ROMIMG/Release/ROMIMG.exe
+      # - uses: actions/upload-artifact@v2
+        # with:
+          # name: ROMIMG
+          # path: ROMIMG/Release/ROMIMG.exe
 
   release:
     needs: [build, build-ps2idbms, build-romimg]
