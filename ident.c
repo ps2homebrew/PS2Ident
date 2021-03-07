@@ -917,7 +917,7 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_CONSOLEID))
     {
         conModelID = SystemInformation->mainboard.ConModelID[0] | SystemInformation->mainboard.ConModelID[1] << 8;
-        fprintf(stream, "    SDMI Model ID:       0x%04x\r\n"
+        fprintf(stream, "    SCE Model ID:        0x%04x\r\n"
                         "    EMCS ID:             0x%02x (%s)\r\n",
                 conModelID,
                 SystemInformation->mainboard.EMCSID,
@@ -925,7 +925,7 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
     }
     else
     {
-        fputs("    SDMI Model ID:       -\r\n"
+        fputs("    SCE Model ID:        -\r\n"
               "    EMCS ID:             -\r\n",
               stream);
     }
@@ -936,7 +936,7 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
     if (SystemInformation->mainboard.ssbus.status & PS2DB_SSBUS_HAS_SPEED)
     {
         fprintf(stream, "Network:\r\n"
-                        "    MAC vendor:          0x%02x:0x%02x:0x%02x\r\n"
+                        "    MAC vendor:          %02x:%02x:%02x\r\n"
                         "    SPEED revision:      0x%04x (%s)\r\n"
                         "    SPEED capabilities:  %04x.%04x (%s)\r\n",
                 SystemInformation->SMAP_MAC_address[0],SystemInformation->SMAP_MAC_address[1],SystemInformation->SMAP_MAC_address[2],

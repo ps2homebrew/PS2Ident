@@ -36,12 +36,12 @@ jobs:
       with:
         name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}
         path: |
-          lang/
-          licenses/
           PS2Ident.elf
           PS2Ident.db
           README.md
           changelog.txt
+          LICENSE_OFL.txt
+          *.ttf
 
     - name: Compile PCSX2 version
       continue-on-error: true
@@ -56,12 +56,12 @@ jobs:
       with:
         name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PCSX2
         path: |
-          lang/
-          licenses/
           PS2Ident.elf
           PS2Ident.db
           README.md
           changelog.txt
+          LICENSE_OFL.txt
+          *.ttf
 
     # 'path' will create artifact with all *.elf in working directory
     # you can change this

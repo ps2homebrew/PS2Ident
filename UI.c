@@ -241,14 +241,14 @@ static int ParseFontListFile(char **array, FILE *file, unsigned int ExpectedNumL
     return result;
 }
 
-static const char DefaultFontFilename[] = "NotoSans-Bold.ttf";
+static const char DefaultFontFilename[] = "NotoSansMono-CondensedBold.ttf";
 
 static char *GetDefaultFontFilePath(void)
 {
     char *result;
 
     if ((result = malloc(sizeof(DefaultFontFilename) + 6 + 2)) != NULL)
-        sprintf(result, "lang/%s", DefaultFontFilename);
+        sprintf(result, "%s", DefaultFontFilename);
 
     return result;
 }
@@ -277,7 +277,7 @@ static char *GetFontFilePath(unsigned int language)
             pFontFilename = FontFileArray[language];
 
             if ((result = malloc(strlen(pFontFilename) + 6)) != NULL)
-                sprintf(result, "lang/%s", pFontFilename);
+                sprintf(result, "%s", pFontFilename);
         }
         else
             result = GetDefaultFontFilePath();
@@ -684,7 +684,7 @@ enum MBOX_SCREEN_ID
 
 static struct UIMenuItem MessageBoxItems[] = {
     {MITEM_LABEL, MBOX_SCREEN_ID_TITLE},
-    {MITEM_SEPERATOR},
+    {MITEM_SEPARATOR},
     {MITEM_BREAK},
 
     {MITEM_STRING, MBOX_SCREEN_ID_MESSAGE, MITEM_FLAG_READONLY},
@@ -977,7 +977,7 @@ void UIDrawMenu(struct UIMenu *menu, unsigned short int frame, short int StartX,
 
         switch (item->type)
         {
-            case MITEM_SEPERATOR:
+            case MITEM_SEPARATOR:
                 x = StartX;
                 y += UI_FONT_HEIGHT;
                 DrawLine(&UIDrawGlobal, x, y + UI_FONT_HEIGHT / 2, UIDrawGlobal.width - UI_OFFSET_X, y + UI_FONT_HEIGHT / 2, 1, GS_WHITE);
@@ -990,7 +990,7 @@ void UIDrawMenu(struct UIMenu *menu, unsigned short int frame, short int StartX,
                 x += (UI_TAB_STOPS * UI_FONT_WIDTH) - (unsigned int)x % (unsigned int)(UI_TAB_STOPS * UI_FONT_WIDTH);
                 break;
             case MITEM_SPACE:
-                x += UI_FONT_WIDTH;
+                x += UI_FONT_WIDTH / 2;
                 break;
             case MITEM_STRING:
                 if (item->string.buffer != NULL)
