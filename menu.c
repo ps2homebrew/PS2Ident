@@ -102,6 +102,7 @@ enum BOARD2_ID
     BOARD2_ID_MODEL_ID,
     BOARD2_ID_MODEL_ID_DESC,
     BOARD2_ID_CON_MODEL_ID,
+    BOARD2_ID_SDMI_COMPANY_ID,
     BOARD2_ID_EMCS_ID,
     BOARD2_ID_EMCS_ID_DESC,
     BOARD2_ID_ILINK_ID_00,
@@ -256,8 +257,8 @@ static struct UIMenuItem SummaryMenuItems[] = {
     {MITEM_TAB},
     {MITEM_VALUE, SUM_BOARD2_ID_SERIAL, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 7},
     {MITEM_BREAK},
+
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MODEL_ID},
-    {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_VALUE, SUM_BOARD2_ID_MODEL_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 6},
     {MITEM_TAB},
@@ -306,7 +307,7 @@ static struct UIMenuItem SummaryMenuItems[] = {
     {MITEM_TAB},
     {MITEM_VALUE, SUM_EEGS_ID_EE_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_DOT},
-    {MITEM_VALUE, SUM_EEGS_ID_EE_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_VALUE, SUM_EEGS_ID_EE_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 2},
     {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_STRING, SUM_EEGS_ID_EE_NAME, MITEM_FLAG_READONLY},
@@ -460,8 +461,6 @@ static struct UIMenuItem Board2MenuItems[] = {
     {MITEM_COLON},
     {MITEM_VALUE, BOARD2_ID_MECHA_RENEWAL_MINUTE, MITEM_FLAG_READONLY, MITEM_FORMAT_HEX, 2},
     {MITEM_BREAK},
-    {MITEM_SEPARATOR},
-    {MITEM_BREAK},
 
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DSP_REVISION},
     {MITEM_TAB},
@@ -480,18 +479,28 @@ static struct UIMenuItem Board2MenuItems[] = {
     {MITEM_TAB},
     {MITEM_VALUE, BOARD2_ID_SERIAL, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 7},
     {MITEM_BREAK},
+
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MODEL_ID},
-    {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_VALUE, BOARD2_ID_MODEL_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 6},
     {MITEM_TAB},
     {MITEM_STRING, BOARD2_ID_MODEL_ID_DESC, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
+
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_CON_MODEL_ID},
     {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, BOARD2_ID_CON_MODEL_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 4},
+    {MITEM_SPACE},
+    {MITEM_SPACE},
+    {MITEM_SPACE},
+    {MITEM_SPACE},
+    {MITEM_VALUE, BOARD2_ID_CON_MODEL_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
     {MITEM_BREAK},
+
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SDMI_COMPANY_ID},
+    {MITEM_TAB},
+    {MITEM_VALUE, BOARD2_ID_SDMI_COMPANY_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 6},
+    {MITEM_BREAK},
+
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_EMCS_ID},
     {MITEM_TAB},
     {MITEM_TAB},
@@ -550,7 +559,6 @@ static struct UIMenuItem ROMMenuItems[] = {
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ROM0},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_ROM0_ADDR, MITEM_FLAG_READONLY, MITEM_FORMAT_POINTER},
-    {MITEM_DASH},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_ROM0_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_SPACE},
@@ -559,7 +567,6 @@ static struct UIMenuItem ROMMenuItems[] = {
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ROM1},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_ROM1_ADDR, MITEM_FLAG_READONLY, MITEM_FORMAT_POINTER},
-    {MITEM_DASH},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_ROM1_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_SPACE},
@@ -568,7 +575,6 @@ static struct UIMenuItem ROMMenuItems[] = {
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ROM2},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_ROM2_ADDR, MITEM_FLAG_READONLY, MITEM_FORMAT_POINTER},
-    {MITEM_DASH},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_ROM2_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_SPACE},
@@ -577,7 +583,6 @@ static struct UIMenuItem ROMMenuItems[] = {
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_EROM},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_EROM_ADDR, MITEM_FLAG_READONLY, MITEM_FORMAT_POINTER},
-    {MITEM_DASH},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_EROM_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_SPACE},
@@ -591,7 +596,6 @@ static struct UIMenuItem ROMMenuItems[] = {
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_BOOT_ROM},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_BOOT_ROM_ADDR, MITEM_FLAG_READONLY, MITEM_FORMAT_POINTER},
-    {MITEM_DASH},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_BOOT_ROM_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_SPACE},
@@ -600,7 +604,6 @@ static struct UIMenuItem ROMMenuItems[] = {
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DVD_ROM},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_DVD_ROM_ADDR, MITEM_FLAG_READONLY, MITEM_FORMAT_POINTER},
-    {MITEM_DASH},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_DVD_ROM_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_SPACE},
@@ -651,24 +654,21 @@ static struct UIMenuItem EEGSMenuItems[] = {
     {MITEM_TAB},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DATABASE},
     {MITEM_SEPARATOR},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_IMPLEMENTATION},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, EEGS_ID_EE_IMPL, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
-    {MITEM_BREAK},
+
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_REVISION},
     {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_VALUE, EEGS_ID_EE_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_DOT},
-    {MITEM_VALUE, EEGS_ID_EE_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_VALUE, EEGS_ID_EE_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 2},
     {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_STRING, EEGS_ID_EE_NAME, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_FPU_IMPLEMENTATION},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_IMPLEMENTATION},
     {MITEM_TAB},
-    {MITEM_VALUE, EEGS_ID_EE_FPU_IMPL, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
+    {MITEM_TAB},
+    {MITEM_VALUE, EEGS_ID_EE_IMPL, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_FPU_REVISION},
     {MITEM_TAB},
@@ -676,6 +676,10 @@ static struct UIMenuItem EEGSMenuItems[] = {
     {MITEM_VALUE, EEGS_ID_EE_FPU_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_DOT},
     {MITEM_VALUE, EEGS_ID_EE_FPU_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_BREAK},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_FPU_IMPLEMENTATION},
+    {MITEM_TAB},
+    {MITEM_VALUE, EEGS_ID_EE_FPU_IMPL, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ICACHE_SIZE},
     {MITEM_TAB},
@@ -1158,7 +1162,7 @@ static int DumpSystemROMScreen(const struct SystemInformation *SystemInformation
     RequiredSpace[1].IsFile = 1;
     RequiredSpace[1].length = 1024;
 
-    //Log file
+    //Log files + database
     RequiredSpace[2].IsFile = 1;
     RequiredSpace[2].length = 2048; //Shouldn't get larger than this.
 
@@ -1252,7 +1256,7 @@ static void LoadBoardInformation(const struct SystemInformation *SystemInformati
 static void LoadBoard2Information(const struct SystemInformation *SystemInformation)
 {
     u32 modelID;
-    u16 conModelID;
+    // u16 conModelID;
 
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MVER))
     {
@@ -1334,7 +1338,7 @@ static void LoadBoard2Information(const struct SystemInformation *SystemInformat
 
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_ILINKID))
     {
-        modelID = SystemInformation->mainboard.ModelID[0] | SystemInformation->mainboard.ModelID[1] << 8 | SystemInformation->mainboard.ModelID[2] << 16;
+        modelID = (u32)(SystemInformation->mainboard.ModelID[0]) | (u32)(SystemInformation->mainboard.ModelID[1] << 8) | (u32)(SystemInformation->mainboard.ModelID[2]) << 16;
 
         UISetType(&Board2ReportMenu, BOARD2_ID_MODEL_ID, MITEM_VALUE);
         UISetValue(&Board2ReportMenu, BOARD2_ID_MODEL_ID, modelID);
@@ -1381,14 +1385,17 @@ static void LoadBoard2Information(const struct SystemInformation *SystemInformat
 
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_CONSOLEID))
     {
-        conModelID = SystemInformation->mainboard.ConModelID[0] | SystemInformation->mainboard.ConModelID[1] << 8;
+        // conModelID = SystemInformation->mainboard.ConModelID[0] | SystemInformation->mainboard.ConModelID[1] << 8;
 
         UISetType(&Board2ReportMenu, BOARD2_ID_SERIAL, MITEM_VALUE);
         UISetValue(&Board2ReportMenu, BOARD2_ID_SERIAL, ((u32)SystemInformation->ConsoleID[6]) << 16 | ((u32)SystemInformation->ConsoleID[5]) << 8 | ((u32)SystemInformation->ConsoleID[4]));
         UISetType(&SummaryMenu, SUM_BOARD2_ID_SERIAL, MITEM_VALUE);
         UISetValue(&SummaryMenu, SUM_BOARD2_ID_SERIAL, ((u32)SystemInformation->ConsoleID[6]) << 16 | ((u32)SystemInformation->ConsoleID[5]) << 8 | ((u32)SystemInformation->ConsoleID[4]));
+
         UISetType(&Board2ReportMenu, BOARD2_ID_CON_MODEL_ID, MITEM_VALUE);
-        UISetValue(&Board2ReportMenu, BOARD2_ID_CON_MODEL_ID, conModelID);
+        UISetValue(&Board2ReportMenu, BOARD2_ID_CON_MODEL_ID, SystemInformation->ConsoleID[0]);
+        UISetType(&Board2ReportMenu, BOARD2_ID_SDMI_COMPANY_ID, MITEM_VALUE);
+        UISetValue(&Board2ReportMenu, BOARD2_ID_SDMI_COMPANY_ID, (u32)(SystemInformation->ConsoleID[3] << 16 | (u32)SystemInformation->ConsoleID[2] << 8 | (u32)SystemInformation->ConsoleID[1]));
         UISetType(&Board2ReportMenu, BOARD2_ID_EMCS_ID, MITEM_VALUE);
         UISetValue(&Board2ReportMenu, BOARD2_ID_EMCS_ID, SystemInformation->mainboard.EMCSID);
         UISetType(&Board2ReportMenu, BOARD2_ID_EMCS_ID_DESC, MITEM_STRING);
@@ -1768,9 +1775,14 @@ void RedrawDumpingScreen(const struct SystemInformation *SystemInformation, cons
     DrawBackground(&UIDrawGlobal, &BackgroundTexture);
     FontPrintf(&UIDrawGlobal, 10, 10, 2, 1.0f, GS_WHITE_FONT, GetUILabel(SYS_UI_LBL_DUMP_SCREEN));
 
+    DumpRegions[DUMP_REGION_EEPROM].label   = GetUILabel(SYS_UI_LBL_EEPROM);
     DumpRegions[DUMP_REGION_BOOT_ROM].label = GetUILabel(SYS_UI_LBL_BOOT_ROM);
     DumpRegions[DUMP_REGION_DVD_ROM].label  = GetUILabel(SYS_UI_LBL_DVD_ROM);
-    DumpRegions[DUMP_REGION_EEPROM].label   = GetUILabel(SYS_UI_LBL_EEPROM);
+
+    /* Do not forget about the MECHACON EEPROM. ;) */
+    FontPrintf(&UIDrawGlobal, DumpRegions[DUMP_REGION_EEPROM].SizeLabelX, DumpRegions[DUMP_REGION_EEPROM].SizeLabelY, 2, 1.0f, GS_WHITE_FONT, "1024");
+    FontPrintf(&UIDrawGlobal, DumpRegions[DUMP_REGION_EEPROM].SizeLabelX + 140, DumpRegions[DUMP_REGION_EEPROM].SizeLabelY, 2, 1.0f, GS_WHITE_FONT, GetUILabel(SYS_UI_LBL_UNIT_BYTES));
+    DumpRegions[DUMP_REGION_EEPROM].IsInstalled = 1;
 
     if (SystemInformation->mainboard.BOOT_ROM.IsExists)
     {
@@ -1798,18 +1810,12 @@ void RedrawDumpingScreen(const struct SystemInformation *SystemInformation, cons
         DumpRegions[DUMP_REGION_DVD_ROM].IsInstalled = 0;
     }
 
-    /* Do not forget about the MECHACON EEPROM. ;) */
-    FontPrintf(&UIDrawGlobal, DumpRegions[DUMP_REGION_EEPROM].SizeLabelX, DumpRegions[DUMP_REGION_EEPROM].SizeLabelY, 2, 1.0f, GS_WHITE_FONT, "1024");
-    FontPrintf(&UIDrawGlobal, DumpRegions[DUMP_REGION_EEPROM].SizeLabelX + 140, DumpRegions[DUMP_REGION_EEPROM].SizeLabelY, 2, 1.0f, GS_WHITE_FONT, GetUILabel(SYS_UI_LBL_UNIT_BYTES));
-    DumpRegions[DUMP_REGION_EEPROM].IsInstalled = 1;
-
     for (i = 0; i < DUMP_REGION_COUNT; i++)
     {
         FontPrintf(&UIDrawGlobal, DumpRegions[i].NameLabelX, DumpRegions[i].NameLabelY, 2, 1.0f, GS_WHITE_FONT, DumpRegions[i].label);
 
         endX   = DumpRegions[i].ProgressBarX + PROGRESS_BAR_LENGTH * DumpingStatus[i].progress;
-        colour = DumpingStatus[i].status < 0 ? GS_RED : (DumpingStatus[i].status == 0) ? GS_LGREY :
-                                                                                         GS_GREEN;
+        colour = DumpingStatus[i].status < 0 ? GS_RED : (DumpingStatus[i].status == 0) ? GS_LGREY : GS_GREEN;
         DrawSprite(&UIDrawGlobal, DumpRegions[i].ProgressBarX, DumpRegions[i].ProgressBarY, endX, DumpRegions[i].ProgressBarY + PROGRESS_BAR_HEIGHT, 3, colour);
 
         if (DumpRegions[i].IsInstalled)
@@ -1877,6 +1883,44 @@ static int DumpSystemROM(const char *path, const struct SystemInformation *Syste
     ROMVerLen    = strlen(SystemInformation->mainboard.romver);
 
     filename     = malloc(PathLength + ModelNameLen + 32);
+
+#ifndef DSNET_HOST_SUPPORT
+    sprintf(filename, "%s/%s_specs.txt", path, SystemInformation->mainboard.ModelName);
+#else
+    sprintf(filename, "%s%s_specs.txt", path, SystemInformation->mainboard.ModelName);
+#endif
+    if ((logfile = fopen(filename, "wb")) != NULL)
+    {
+        WriteSystemInformation(logfile, SystemInformation);
+        fclose(logfile);
+    }
+
+    //If the mainboard model is not recognized, write a new database record file to the disk.
+    if (PS2IDBMS_LookupMainboardModel(&SystemInformation->mainboard) == NULL)
+    {
+#ifndef DSNET_HOST_SUPPORT
+        sprintf(filename, "%s/%s_database.bin", path, SystemInformation->mainboard.ModelName);
+#else
+        sprintf(filename, "%s%s_database.bin", path, SystemInformation->mainboard.ModelName);
+#endif
+        WriteNewMainboardDBRecord(filename, &SystemInformation->mainboard);
+    }
+
+#ifndef DSNET_HOST_SUPPORT
+    sprintf(filename, "%s/%s_NVM.bin", path, SystemInformation->mainboard.ModelName);
+#else
+    sprintf(filename, "%s%s_NVM.bin", path, SystemInformation->mainboard.ModelName);
+#endif
+    if ((result = DumpMECHACON_EEPROM(filename)) == 0)
+    {
+        DumpingStatus[DUMP_REGION_EEPROM].progress = 1.00f;
+        DumpingStatus[DUMP_REGION_EEPROM].status   = 1;
+    }
+    else
+        DumpingStatus[DUMP_REGION_EEPROM].status = result;
+
+    RedrawDumpingScreen(SystemInformation, DumpingStatus);
+
     if (SystemInformation->mainboard.BOOT_ROM.IsExists)
     {
         DEBUG_PRINTF("Dumping Boot ROM at %p, %u bytes...", SystemInformation->mainboard.BOOT_ROM.StartAddress, SystemInformation->mainboard.BOOT_ROM.size);
@@ -1913,43 +1957,6 @@ static int DumpSystemROM(const char *path, const struct SystemInformation *Syste
         {
             DEBUG_PRINTF("failed!\n");
         }
-    }
-
-#ifndef DSNET_HOST_SUPPORT
-    sprintf(filename, "%s/%s_NVM.bin", path, SystemInformation->mainboard.ModelName);
-#else
-    sprintf(filename, "%s%s_NVM.bin", path, SystemInformation->mainboard.ModelName);
-#endif
-    if ((result = DumpMECHACON_EEPROM(filename)) == 0)
-    {
-        DumpingStatus[DUMP_REGION_EEPROM].progress = 1.00f;
-        DumpingStatus[DUMP_REGION_EEPROM].status   = 1;
-    }
-    else
-        DumpingStatus[DUMP_REGION_EEPROM].status = result;
-
-    RedrawDumpingScreen(SystemInformation, DumpingStatus);
-
-#ifndef DSNET_HOST_SUPPORT
-    sprintf(filename, "%s/%s_specs.txt", path, SystemInformation->mainboard.ModelName);
-#else
-    sprintf(filename, "%s%s_specs.txt", path, SystemInformation->mainboard.ModelName);
-#endif
-    if ((logfile = fopen(filename, "wb")) != NULL)
-    {
-        WriteSystemInformation(logfile, SystemInformation);
-        fclose(logfile);
-    }
-
-    //If the mainboard model is not recognized, write a new database record file to the disk.
-    if (PS2IDBMS_LookupMainboardModel(&SystemInformation->mainboard) == NULL)
-    {
-#ifndef DSNET_HOST_SUPPORT
-        sprintf(filename, "%s/%s_database.bin", path, SystemInformation->mainboard.ModelName);
-#else
-        sprintf(filename, "%s%s_database.bin", path, SystemInformation->mainboard.ModelName);
-#endif
-        WriteNewMainboardDBRecord(filename, &SystemInformation->mainboard);
     }
 
     free(filename);

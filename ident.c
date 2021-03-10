@@ -743,7 +743,8 @@ unsigned int CalculateCPUCacheSize(unsigned char value)
 int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemInformation)
 {
     unsigned int i, modelID;
-    unsigned short int conModelID;
+    // unsigned short int conModelID;
+    u32 Serial;
     int MayBeModded;
     const char *dvdplVer;
 
@@ -902,7 +903,7 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
     }
 
     //i.Link Model ID
-    fputs("    Model ID:            ", stream);
+    fputs("    i.Link Model ID:     ", stream);
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_ILINKID))
     {
         modelID = SystemInformation->mainboard.ModelID[0] | SystemInformation->mainboard.ModelID[1] << 8 | SystemInformation->mainboard.ModelID[2] << 16;
@@ -916,17 +917,25 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
     //SDMI Model ID (only 1 last byte, but we will keep 2 bytes)
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_CONSOLEID))
     {
-        conModelID = SystemInformation->mainboard.ConModelID[0] | SystemInformation->mainboard.ConModelID[1] << 8;
-        fprintf(stream, "    SCE Model ID:        0x%04x\r\n"
-                        "    EMCS ID:             0x%02x (%s)\r\n",
-                conModelID,
-                SystemInformation->mainboard.EMCSID,
-                GetEMCSIDDesc(SystemInformation->mainboard.EMCSID));
+        // conModelID = SystemInformation->mainboard.ConModelID[0] | SystemInformation->mainboard.ConModelID[1] << 8;
+        Serial = (SystemInformation->ConsoleID[6]) << 16 | (SystemInformation->ConsoleID[5]) << 8 | (SystemInformation->ConsoleID[4]);
+        fprintf(stream, "    Console Model ID:    0x%02x\r\n"
+                        "    SDMI Company ID:     %02x-%02x-%02x\r\n"
+                        "    EMCS ID:             0x%02x (%s)\r\n"
+                        "    Serial range:        %03dxxxx\r\n"
+                        ,
+                // conModelID,
+                SystemInformation->mainboard.ConModelID[0],
+                SystemInformation->mainboard.ConModelID[3], SystemInformation->mainboard.ConModelID[2], SystemInformation->mainboard.ConModelID[1],
+                SystemInformation->mainboard.EMCSID, GetEMCSIDDesc(SystemInformation->mainboard.EMCSID),
+                Serial/10000);
     }
     else
     {
-        fputs("    SCE Model ID:        -\r\n"
-              "    EMCS ID:             -\r\n",
+        fputs("    Console Model ID:    -\r\n"
+              "    SDMI Company ID:     -\r\n"
+              "    EMCS ID:             -\r\n"
+              "    Serial range:        -\r\n",
               stream);
     }
 
@@ -935,7 +944,7 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
 
     if (SystemInformation->mainboard.ssbus.status & PS2DB_SSBUS_HAS_SPEED)
     {
-        fprintf(stream, "Network:\r\n"
+        fprintf(stream, "DEV9:\r\n"
                         "    MAC vendor:          %02x:%02x:%02x\r\n"
                         "    SPEED revision:      0x%04x (%s)\r\n"
                         "    SPEED capabilities:  %04x.%04x (%s)\r\n",
@@ -948,7 +957,7 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
     }
     else
     {
-        fprintf(stream, "Network:\r\n    ***No expansion device connected***\r\n");
+        fprintf(stream, "DEV9:\r\n    ***No expansion device connected***\r\n");
     }
 
     fprintf(stream, "i.Link:\r\n"

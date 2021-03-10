@@ -262,7 +262,7 @@ static char *GetFontFilePath(unsigned int language)
     result = NULL;
     memset(FontFileArray, 0, sizeof(FontFileArray));
 
-    while ((file = fopen("lang/fonts.txt", "r")) == NULL)
+    while ((file = fopen("fonts.txt", "r")) == NULL)
     {
         if (errno != ENODEV)
             break;

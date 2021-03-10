@@ -22,11 +22,11 @@ EE_CFLAGS += -D_EE -O2 -mgpopt $(EE_GPVAL)
 EE_TEMP_FILES = SIO2MAN_irx.c MCMAN_irx.c MCSERV_irx.c PADMAN_irx.c POWEROFF_irx.c PS2DEV9_irx.c USBD_irx.c USBHDFSD_irx.c USBHDFSDFSV_irx.c SYSMAN_irx.c buttons.c devices.c background_img.c IOPRP_img.c
 
 ifeq ($(DSNET_HOST_SUPPORT),1)
-	EE_CFLAGS += -DDSNET_HOST_SUPPORT=1
+	EE_CFLAGS += -DDSNET_HOST_SUPPORT
 endif
 
 ifeq ($(DEBUG),1)
-	IOP_CFLAGS += -DDEBUG=1
+	IOP_CFLAGS += -DDEBUG
 endif
 
 ifeq ($(DISABLE_ILINK_DUMPING),1)
