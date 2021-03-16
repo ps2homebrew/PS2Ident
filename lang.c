@@ -30,6 +30,7 @@ static const char *DefaultLanguageLabelStringTable[SYS_UI_LBL_COUNT] = {
     "Slot 1",
     "Slot 2",
     "USB mass storage",
+    "host0:",
     "Return to main menu",
     "Dump system information",
     "Value",
