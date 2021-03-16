@@ -35,6 +35,7 @@ extern GS_IMAGE DeviceIconTexture;
 extern unsigned short int SelectButton, CancelButton;
 
 static int DumpSystemROM(const char *path, const struct SystemInformation *SystemInformation);
+static int DumpLargeRoms = 1;
 
 #define MAIN_MENU_BTN_DUMP 0xFF //Special button!
 
@@ -1114,10 +1115,22 @@ static int GetUserSaveDeviceSelection(char *SelectedDevice, const struct Require
                     sprintf(SelectedDevice, "%s%u:", devices[SelectedDeviceIndex].name, devices[SelectedDeviceIndex].unit);
                     result = 0;
                     done   = 1;
+                    DumpLargeRoms = 1;
                 }
                 else if (result == 0)
                 {
-                    DisplayErrorMessage(SYS_UI_MSG_INSUF_SPACE_ERR);
+                    // try to dump only logs and eeprom if no free space
+                    DumpLargeRoms = 0;
+                    if ((result = GetHasDeviceSufficientSpace(devices[SelectedDeviceIndex].name, devices[SelectedDeviceIndex].unit, RequiredSpaceStats, 3)) == 1)
+                    {
+                        sprintf(SelectedDevice, "%s%u:", devices[SelectedDeviceIndex].name, devices[SelectedDeviceIndex].unit);
+                        result = 0;
+                        done   = 1;
+                    }
+                    else if (result == 0)
+                    {
+                        DisplayErrorMessage(SYS_UI_MSG_INSUF_SPACE_ERR);
+                    }
                 }
                 else
                 {
@@ -1921,7 +1934,7 @@ static int DumpSystemROM(const char *path, const struct SystemInformation *Syste
 
     RedrawDumpingScreen(SystemInformation, DumpingStatus);
 
-    if (SystemInformation->mainboard.BOOT_ROM.IsExists)
+    if (SystemInformation->mainboard.BOOT_ROM.IsExists && DumpLargeRoms)
     {
         DEBUG_PRINTF("Dumping Boot ROM at %p, %u bytes...", SystemInformation->mainboard.BOOT_ROM.StartAddress, SystemInformation->mainboard.BOOT_ROM.size);
 
@@ -1940,7 +1953,7 @@ static int DumpSystemROM(const char *path, const struct SystemInformation *Syste
         }
     }
 
-    if (SystemInformation->mainboard.DVD_ROM.IsExists)
+    if (SystemInformation->mainboard.DVD_ROM.IsExists && DumpLargeRoms)
     {
         DEBUG_PRINTF("Dumping DVD ROM at %p, %u bytes...", SystemInformation->mainboard.DVD_ROM.StartAddress, SystemInformation->mainboard.DVD_ROM.size);
 
