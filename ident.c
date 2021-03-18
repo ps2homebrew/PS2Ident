@@ -193,18 +193,18 @@ int GetPeripheralInformation(struct SystemInformation *SystemInformation)
     memset(SystemInformation->DSPVersion, 0, sizeof(SystemInformation->DSPVersion));
     memset(SystemInformation->mainboard.MRenewalDate, 0, sizeof(SystemInformation->mainboard.MRenewalDate));
 
-    if (sceCdAltMV(SystemInformation->mainboard.MECHACONVersion, &stat) == 0 || (stat & 0x80) != 0)
-    {
-        // ignore stat on 0150 bootroms. Late DTL-H3010x set errored stat & 0x80, which is not true
-        if (!strncmp(SystemInformation->mainboard.romver, "0150", 4))
-        {
-            printf("Failed to read MECHACON version. Stat: %x\n", stat);
-            SystemInformation->mainboard.status |= PS2IDB_STAT_ERR_MVER;
-        }
-    }
     if (sceGetDspVersion(SystemInformation->DSPVersion, &stat) == 0 || (stat & 0x80) != 0)
     {
         printf("Failed to read DSP version. Stat: %x\n", stat);
+        SystemInformation->mainboard.status |= PS2IDB_STAT_ERR_MVER;
+    }
+    if (sceCdAltMV(SystemInformation->mainboard.MECHACONVersion, &stat) == 0 || (stat & 0x80) != 0)
+    {
+        // ignore stat. DTL-H3010x set errored stat & 0x80, which is not true.
+        if ((stat & 0x80) != 0)
+        {
+            SystemInformation->mainboard.MECHACONVersion[0] = SystemInformation->mainboard.MECHACONVersion[0] - 0x80;
+        }
     }
     if (sceCdReadConsoleID(SystemInformation->ConsoleID, &result) == 0 || (result & 0x80))
     {
@@ -726,7 +726,7 @@ const char *GetDSPDesc(unsigned char revision)
         "CXD1869Q",
         "CXD1869AQ",
         "CXD1869BQ/CXD1886Q-1/CXD1886",
-        "CXD3098Q",
+        "CXD3098Q/CXD3098AQ",
         "Missing"};
 
     if (revision > 4)
