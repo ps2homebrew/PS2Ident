@@ -2,6 +2,9 @@
 *.elf
 *_irx.c
 *.irx
+*.user
+ROMIMG/Debug/
+PS2IDBMS/Debug/
 
 background_img.c
 buttons.c

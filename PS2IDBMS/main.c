@@ -618,7 +618,7 @@ static void AddComponentEntry(int id)
 static void ListComponentModels(int id)
 {
     unsigned int i, NumEntriesInDatabase;
-    const struct PS2IDBComponentEntry *entry;
+    const struct PS2IDBComponentEntry* entry;
 
     if ((NumEntriesInDatabase = PS2IDBMS_GetNumDatabaseRecords(id)) > 0)
     {
@@ -633,6 +633,42 @@ static void ListComponentModels(int id)
     else
     {
         printf("No entries in database.\n");
+    }
+}
+
+static void SortComponentModels(int id)
+{
+    unsigned int i, j;
+    const struct PS2IDBComponentEntry* entry_j;
+    const struct PS2IDBComponentEntry* entry_j1;
+    
+    unsigned int NumEntriesInDatabase = PS2IDBMS_GetNumDatabaseRecords(id);
+
+    if (NumEntriesInDatabase > 1)
+    {
+        printf("Model list (%u records):\n", NumEntriesInDatabase);
+
+        for (i = 0; i < NumEntriesInDatabase; i++)
+        {
+            for (j = 0; j < NumEntriesInDatabase - 1; j++)
+            {
+                entry_j = PS2IDBMS_GetDatabaseRecord(id, j);
+                entry_j1 = PS2IDBMS_GetDatabaseRecord(id, j + 1);
+                if (entry_j->revision > entry_j1->revision)
+                {
+                    struct PS2IDBComponentEntry EntryJ, EntryJ1;
+                    memcpy(&EntryJ, entry_j, sizeof(struct PS2IDBComponentEntry));
+                    memcpy(&EntryJ1, entry_j1, sizeof(struct PS2IDBComponentEntry));
+                    PS2IDBMS_UpdateModel(id, j, &EntryJ1);
+                    PS2IDBMS_UpdateModel(id, j + 1, &EntryJ);
+                }
+            }
+        }
+        printf("Sort complete.\n");
+    }
+    else
+    {
+        printf("Sort complete.\n");
     }
 }
 
@@ -722,11 +758,34 @@ static void ListComponent(void)
     {
         switch (choice)
         {
-            case PS2IDB_COMPONENT_MAINBOARD:
-                DisplayMainboardList();
-                break;
-            default:
-                ListComponentModels(choice);
+        case PS2IDB_COMPONENT_MAINBOARD:
+            DisplayMainboardList();
+            break;
+        default:
+            ListComponentModels(choice);
+        }
+    }
+}
+
+static void SortComponent(void)
+{
+    int i, choice;
+
+    printf("Select component type to list:\n");
+    for (i = 0; i < PS2IDB_COMPONENT_COUNT; i++)
+        printf("\t%d. %s\n", i + 1, ComponentTypes[i]);
+    printf("Enter choice (Enter 0 to quit): ");
+    choice = GetWord(0) - 1;
+
+    if (choice >= 0 && choice < PS2IDB_COMPONENT_COUNT)
+    {
+        switch (choice)
+        {
+        case PS2IDB_COMPONENT_MAINBOARD:
+            printf("Mainboard list cannot be sorted.\n");
+            break;
+        default:
+            SortComponentModels(choice);
         }
     }
 }
@@ -980,16 +1039,17 @@ int main(int argc, char *argv[])
                        "\t1. Import mainboard model\n"
                        "\t2. Add component\n"
                        "\t3. View component list\n"
-                       "\t4. Update component/mainboard entry\n"
-                       "\t5. Delete component\n"
-                       "\t6. Generate mainboard model spreadsheet\n"
-                       "\t7. Save and quit\n"
-                       "\t8. Quit without saving\n"
+                       "\t4. Sort component list\n"
+                       "\t5. Update component/mainboard entry\n"
+                       "\t6. Delete component\n"
+                       "\t7. Generate mainboard model spreadsheet\n"
+                       "\t8. Save and quit\n"
+                       "\t9. Quit without saving\n"
                        "Your choice: ");
 
                 if (scanf("%d", &choice) != 1)
                     choice = -1;
-            } while (choice < 1 || choice > 8);
+            } while (choice < 1 || choice > 9);
             ClearInput();
 
             switch (choice)
@@ -1004,15 +1064,18 @@ int main(int argc, char *argv[])
                     ListComponent();
                     break;
                 case 4:
-                    UpdateComponent();
+                    SortComponent();
                     break;
                 case 5:
-                    DeleteComponent();
+                    UpdateComponent();
                     break;
                 case 6:
-                    GenerateMainboardCSV();
+                    DeleteComponent();
                     break;
                 case 7:
+                    GenerateMainboardCSV();
+                    break;
+                case 8:
                     printf("Saving...");
                     if ((result = PS2IDBMS_SaveDatabase(argv[1])) == 0)
                     {
