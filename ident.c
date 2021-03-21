@@ -182,6 +182,12 @@ int GetPeripheralInformation(struct SystemInformation *SystemInformation)
     if ((pNewline = strrchr(SystemInformation->DVDPlayerVer, '\n')) != NULL)
         *pNewline = '\0'; //The DVD player version may have a newline in it.
 
+    //Get OSD Player version
+    strncpy(SystemInformation->OSDVer, OSDGetVersion(), sizeof(SystemInformation->OSDVer) - 1);
+    SystemInformation->OSDVer[sizeof(SystemInformation->OSDVer) - 1] = '\0';
+    if ((pNewline = strrchr(SystemInformation->OSDVer, '\n')) != NULL)
+        *pNewline = '\0'; //The OSDVer may have a newline in it.
+
     //Get PS1DRV version
     strncpy(SystemInformation->PS1DRVVer, PS1DRVGetVersion(), sizeof(SystemInformation->PS1DRVVer) - 1);
     SystemInformation->PS1DRVVer[sizeof(SystemInformation->PS1DRVVer) - 1] = '\0';
@@ -460,7 +466,6 @@ const char *GetSPEEDDesc(unsigned short int revision)
     return description;
 }
 
-
 const char *GetSPEEDCapsDesc(unsigned short int caps)
 {
     static char capsbuffer[64];
@@ -726,7 +731,7 @@ const char *GetDSPDesc(unsigned char revision)
         "CXD1869Q",
         "CXD1869AQ",
         "CXD1869BQ/CXD1886Q-1/CXD1886",
-        "CXD3098Q/CXD3098AQ",
+        "CXD3098Q/CXD1886Q-1/CXD3098AQ",
         "Missing"};
 
     if (revision > 4)
@@ -747,6 +752,7 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
     u32 Serial;
     int MayBeModded;
     const char *dvdplVer;
+    const char *OSDVer;
 
     MayBeModded = CheckROM(&SystemInformation->mainboard);
 
@@ -798,9 +804,11 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
 
     //Version numbers
     dvdplVer = SystemInformation->DVDPlayerVer[0] == '\0' ? "-" : SystemInformation->DVDPlayerVer;
+    OSDVer = SystemInformation->OSDVer[0] == '\0' ? "-" : SystemInformation->OSDVer;
     fprintf(stream, "    DVD Player:    %s\r\n"
-                    "PS1DRV:            %s\r\n",
-            dvdplVer, SystemInformation->PS1DRVVer);
+                    "    OSDVer:        %s\r\n"
+                    "    PS1DRV:        %s\r\n",
+            dvdplVer, OSDVer, SystemInformation->PS1DRVVer);
 
     //Chip revisions
     fprintf(stream, "EE/GS:\r\n"

@@ -14,6 +14,7 @@ struct SystemInformation
     unsigned char SMAP_MAC_address[6];
     char chassis[14];
     char DVDPlayerVer[32];
+    char OSDVer[16];
     char PS1DRVVer[32];
     u8 DSPVersion[2];
     unsigned int EE_F520;
