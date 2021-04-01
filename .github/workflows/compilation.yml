@@ -191,6 +191,7 @@ jobs:
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: false
+        automatic_release_tag: "stable"
         draft: true
         files: |
           ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}.7z

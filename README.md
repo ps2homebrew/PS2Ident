@@ -1,7 +1,7 @@
 # This is a fork of this project: https://sites.google.com/view/ysai187/home/projects/ps2ident
 
 ## PlayStation 2 Identification tool (PS2Ident)
-v0.835
+v0.850
 
 ### Introduction
 PS2Ident is an identification tool that allows dumps of a PlayStation 2 console's ROM chips and MECHACON NVRAM to be made.

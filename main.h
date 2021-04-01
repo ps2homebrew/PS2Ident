@@ -5,4 +5,4 @@
 #define DEBUG_PRINTF(args...)
 #endif
 
-#define PS2IDENT_VERSION "0.84b"
+#define PS2IDENT_VERSION "0.850"
