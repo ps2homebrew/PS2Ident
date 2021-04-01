@@ -1,6 +1,6 @@
 # This is a fork of this project: https://sites.google.com/view/ysai187/home/projects/ps2ident
 
-## PlayStation 2 Identification tool (PS2Ident) 
+## PlayStation 2 Identification tool (PS2Ident)
 v0.835
 
 ### Introduction
@@ -21,7 +21,7 @@ It has the following features:
 Note: some values are retreived incorrectly from PS3 BC consoles.
 Note: it can fail on PS3 semi-BC, PS3 non-BC and PS4 in PS2 emulation mode.*
 
-Its database, which contains the parts and mainboard data, is managed and updated with the PlayStation 2 Ident DataBase Management System (PS2IDBMS) tool. It wasn't possible to get a complete list of all PlayStation 2 models in existence. With PS2IDBMS, a spreadsheet containing all recorded models can be generated automatically. 
+Its database, which contains the parts and mainboard data, is managed and updated with the PlayStation 2 Ident DataBase Management System (PS2IDBMS) tool. It wasn't possible to get a complete list of all PlayStation 2 models in existence. With PS2IDBMS, a spreadsheet containing all recorded models can be generated automatically.
 
 ### How to use this software:
 Extract the whole archive (do not delete any files or folders) onto a location on a supported device.
@@ -102,6 +102,54 @@ MPU - See MRP.
 * PS1DRV Version - The version number of the PlayStation driver. The earliest ROMs do not have PS1VER in ROM.  For Japan, only the SCPH-10000 and SCPH-15000 lack this file. "1.01" is hardcoded. For other territories (should be only the earliest SCPH-30001), "1.10" is hardcoded. The SCPH-75000 and later have a universal PS1DRV module, while earlier versions were tailored for the region of PS2 (Japan, USA, Europe, Asia or China).
 * DVD Player Version The version number of the built-in DVD player, if applicable. Note: Slimline consoles that had the SSBUS I/F Controller integrated into the IOP will report their SSBUS I/F controllers as version 0x31 as well. Due to some controllers reporting the same version number (0x31), they will be all identified as a "CXD9611" since they are supposed to be fully compatible anyway.
 
+
+Known mechacon versions:
+
+	0x0102 | CXP101064-605R
+	0x0103 | CXP101064-602R
+	0x0106 | CXP102064-001R (Not confirmed)
+	0x0107 | CXP102064-003R
+	0x0108 | CXP102064-002R
+	0x0109 | CXP102064-751R
+	0x0200 | CXP102064-004R (Not confirmed)
+	0x0202 | CXP102064-005R
+	0x0204 | CXP102064-(1,2,3)01R
+	0x0205 | CXP102064-702R
+	0x0206 | CXP102064-(1,2,3)02R
+	0x0207 | CXP102064-703R
+	0x0208 | CXP102064-006R (Not confirmed)
+	0x0209 | CXP102064-704R (Not confirmed)
+	0x020c | CXP102064-007R/-(1,2,3)03R
+	0x020d | CXP102064-705R/-752R
+	0x020e | CXP102064-008R/-(1,2,3)04R
+	0x0300 | CXP103049-(1,2,3)01GG
+	0x0302 | CXP103049-001GG/-(1,2,3)02GG
+	0x0304 | CXP103049-401GG
+	0x0306 | CXP103049-002GG/-(1,2,3)03GG/-402GG/-501GG
+	0x0308 | CXP103049-003GG/-403GG
+	0x0500 | CXR706080-101GG
+	0x0502 | CXR706080-102GG
+	0x0504 | CXR706080-103GG
+	0x0506 | CXR706080-104GG/-106GG(MEX)
+	0x0508 | CXR706080-701GG (Not confirmed)
+	0x050a | CXR706080-702GG
+	0x050c | CXR706080-105GG/CXR706F080-1GG
+	0x050e | CXR706080-703GG
+	0x0600 | CXR716080-101GG
+	0x0602 | CXR716080-102GG
+	0x0604 | CXR716080-103GG
+	0x0606 | CXR716080-104GG
+	0x0608 | CXR716080-105GG (Not confirmed)
+	0x060a | CXR716080-106GG
+	0x060c | CXR726080-301GB
+Mechacon chips released and 2 big families: pre-dragon (mecha ver <= 3) and dragon models (mecha ver >= 5).
+Pre-dragon family chip can be recognized more detailed by looking into Mechacon region.
+Region is coded into chip first symbol after dash.
+For example, if mechacon version is 0x0306 and region is 0x03 then it will be chip CXP103049-303GG,
+if region is Japan (0x00) then chip will be CXP103049-002GG, if Russia - CXP103049-501GG, etc.
+For Dragon family, sometimes chips can be recognized only by M Renewal Date, this parametr is more accurate then chip version.
+DTL dragon models report itself as odd numbered chip, but chip itself is the same.
+
 Known chassis versions (this list maybe is not complete):
 
 	A-chassis	GH-001	SCPH-10000
@@ -141,9 +189,9 @@ Known chassis versions (this list maybe is not complete):
 Known EMCS IDs:
 
 	00	- SONY EMCS (S EMCS)
-	01	- SCPH-3900*/3700* "MADE IN CHINA" models - Assumed to all be Foxconn (FOXC)
-	02	- SCPH-3900*/3700* SuZhou MainTek (SZMT)
-	03	- SCPH-3900*/3700* SKZ SONY KISARAZU
+	01	- SCPH-3900x/37000 "MADE IN CHINA" models - Assumed to all be Foxconn (FOXC)
+	02	- SCPH-3900x/37000 SuZhou MainTek (SZMT)
+	03	- SCPH-3900x/37000 SKZ SONY KISARAZU
 	10	- S EMCS
 	11	- SKD (SONY KOHDA)
 	18	- S EMCS (PSX)
