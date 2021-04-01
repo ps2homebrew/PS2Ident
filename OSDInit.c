@@ -20,6 +20,8 @@
 	configuration data separated, presumably for clarity of code and
 	to achieve low-coupling (perhaps they belonged to different modules).	*/
 
+static char OSDVer[16];
+
 static int ConsoleRegion = -1, ConsoleOSDRegion = -1, ConsoleOSDLanguage = -1;
 static int ConsoleOSDRegionInitStatus = 0, ConsoleRegionParamInitStatus = 0; //0 = Not init. 1 = Init complete. <0 = Init failed.
 static u8 ConsoleRegionData[16] = {0, 0, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -32,7 +34,7 @@ static int InitMGRegion(void);
 static int ConsoleInitRegion(void);
 static int ConsoleRegionParamsInitPS1DRV(const char *romver);
 static int GetConsoleRegion(void);
-static int CdReadOSDRegionParams(char *OSDVer);
+static int CdReadOSDRegionParams(char *OSDVersion);
 static int GetOSDRegion(void);
 static void InitOSDDefaultLanguage(int region, const char *language);
 static int ReadOSDConfigPS2(OSDConfig2_t *config, const OSDConfigStore_t *OSDConfigBuffer);
@@ -205,19 +207,19 @@ static int GetConsoleRegion(void)
     return result;
 }
 
-static int CdReadOSDRegionParams(char *OSDVer)
+static int CdReadOSDRegionParams(char *OSDVersion)
 {
     int result;
 
-    if (OSDVer[4] == '?')
+    if (OSDVersion[4] == '?')
     {
         if (InitMGRegion() >= 0)
         {
             result    = 1;
-            OSDVer[4] = ConsoleRegionData[3];
-            OSDVer[5] = ConsoleRegionData[4];
-            OSDVer[6] = ConsoleRegionData[5];
-            OSDVer[7] = ConsoleRegionData[6];
+            OSDVersion[4] = ConsoleRegionData[3];
+            OSDVersion[5] = ConsoleRegionData[4];
+            OSDVersion[6] = ConsoleRegionData[5];
+            OSDVersion[7] = ConsoleRegionData[6];
         }
         else
             result = 0;
@@ -233,7 +235,6 @@ static int CdReadOSDRegionParams(char *OSDVer)
 
 static int GetOSDRegion(void)
 {
-    char OSDVer[16];
     int fd;
 
     if (ConsoleOSDRegionInitStatus == 0 || ConsoleOSDRegion == -1)
@@ -594,4 +595,9 @@ int OSDInitROMVER(void)
     }
 
     return 0;
+}
+
+const char *OSDGetVersion(void)
+{
+    return OSDVer;
 }

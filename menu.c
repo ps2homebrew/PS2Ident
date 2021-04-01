@@ -35,37 +35,35 @@ extern GS_IMAGE DeviceIconTexture;
 extern unsigned short int SelectButton, CancelButton;
 
 static int DumpSystemROM(const char *path, const struct SystemInformation *SystemInformation);
+static int DumpLargeRoms = 1;
 
 #define MAIN_MENU_BTN_DUMP 0xFF //Special button!
 
-enum EEGS_ID
+enum SUMMARY_ID
 {
-    EEGS_ID_EE_IMPL = 1,
-    EEGS_ID_EE_REV_MINOR,
-    EEGS_ID_EE_REV_MAJOR,
-    EEGS_ID_EE_NAME,
-    EEGS_ID_EE_FPU_IMPL,
-    EEGS_ID_EE_FPU_REV_MINOR,
-    EEGS_ID_EE_FPU_REV_MAJOR,
-    EEGS_ID_EE_ICACHE_SIZE,
-    EEGS_ID_EE_DCACHE_SIZE,
-    EEGS_ID_EE_RAM_SIZE,
+    SUM_BOARD_ID_MODEL_NAME = 1,
+    SUM_BOARD_ID_BOARD_NAME,
+    SUM_BOARD2_ID_SERIAL,
+    SUM_BOARD2_ID_MODEL_ID,
+    SUM_BOARD2_ID_MODEL_ID_DESC,
+    SUM_BOARD2_ID_EMCS_ID,
+    SUM_BOARD2_ID_EMCS_ID_DESC,
+    SUM_ROM_ID_ROMVER,
 
-    EEGS_ID_GS_REV_MAJOR,
-    EEGS_ID_GS_REV_MINOR,
-    EEGS_ID_GS_NAME,
-    EEGS_ID_GS_ID
-};
+    SUM_ROM_ID_DVDPLVER,
 
-enum IOPSPU2_ID
-{
-    IOPSPU2_ID_IOP_REV_MAJOR = 1,
-    IOPSPU2_ID_IOP_REV_MINOR,
-    IOPSPU2_ID_IOP_NAME,
-    IOPSPU2_ID_IOP_RAM_SIZE,
-
-    IOPSPU2_ID_SPU2_REV,
-    IOPSPU2_ID_SPU2_NAME
+    SUM_BOARD2_ID_MECHA_REV_MAJOR,
+    SUM_BOARD2_ID_MECHA_REV_MINOR,
+    SUM_BOARD2_ID_MECHA_NAME,
+    SUM_EEGS_ID_EE_REV_MAJOR,
+    SUM_EEGS_ID_EE_REV_MINOR,
+    SUM_EEGS_ID_EE_NAME,
+    SUM_EEGS_ID_GS_REV_MAJOR,
+    SUM_EEGS_ID_GS_REV_MINOR,
+    SUM_EEGS_ID_GS_NAME,
+    SUM_IOPSPU2_ID_IOP_REV_MAJOR,
+    SUM_IOPSPU2_ID_IOP_REV_MINOR,
+    SUM_IOPSPU2_ID_IOP_NAME
 };
 
 enum BOARD_ID
@@ -92,6 +90,8 @@ enum BOARD2_ID
     BOARD2_ID_MECHA_REGION_NAME,
     BOARD2_ID_MECHA_TYPE,
     BOARD2_ID_MECHA_TYPE_NAME,
+    BOARD2_ID_DSP_REV,
+    BOARD2_ID_DSP_NAME,
     BOARD2_ID_ADD010,
     BOARD2_ID_ADD010_DESC,
     BOARD2_ID_MECHA_RENEWAL_YEAR,
@@ -103,6 +103,7 @@ enum BOARD2_ID
     BOARD2_ID_MODEL_ID,
     BOARD2_ID_MODEL_ID_DESC,
     BOARD2_ID_CON_MODEL_ID,
+    BOARD2_ID_SDMI_COMPANY_ID,
     BOARD2_ID_EMCS_ID,
     BOARD2_ID_EMCS_ID_DESC,
     BOARD2_ID_ILINK_ID_00,
@@ -149,6 +150,36 @@ enum ROM_ID
     ROM_ID_ROMGEN_YYYY,
     ROM_ID_DVDPLVER,
     ROM_ID_PS1DRVVER
+};
+
+enum EEGS_ID
+{
+    EEGS_ID_EE_IMPL = 1,
+    EEGS_ID_EE_REV_MINOR,
+    EEGS_ID_EE_REV_MAJOR,
+    EEGS_ID_EE_NAME,
+    EEGS_ID_EE_FPU_IMPL,
+    EEGS_ID_EE_FPU_REV_MINOR,
+    EEGS_ID_EE_FPU_REV_MAJOR,
+    EEGS_ID_EE_ICACHE_SIZE,
+    EEGS_ID_EE_DCACHE_SIZE,
+    EEGS_ID_EE_RAM_SIZE,
+
+    EEGS_ID_GS_REV_MAJOR,
+    EEGS_ID_GS_REV_MINOR,
+    EEGS_ID_GS_NAME,
+    EEGS_ID_GS_ID
+};
+
+enum IOPSPU2_ID
+{
+    IOPSPU2_ID_IOP_REV_MAJOR = 1,
+    IOPSPU2_ID_IOP_REV_MINOR,
+    IOPSPU2_ID_IOP_NAME,
+    IOPSPU2_ID_IOP_RAM_SIZE,
+
+    IOPSPU2_ID_SPU2_REV,
+    IOPSPU2_ID_SPU2_NAME
 };
 
 enum DEV9_ID
@@ -199,152 +230,141 @@ enum EXTBUS_ID
     EXTBUS_ID_ILINK_PRODUCT_ID
 };
 
-static struct UIMenuItem EEGSMenuItems[] = {
+static struct UIMenuItem SummaryMenuItems[] = {
+//Mainboard, model and various params
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SYS_INFO}, {MITEM_BREAK}, {MITEM_BREAK},
 
-    //EE
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SUMMARY},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_VALUE},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DATABASE},
+    {MITEM_SEPARATOR},
+
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MODEL},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_STRING, SUM_BOARD_ID_MODEL_NAME, MITEM_FLAG_READONLY},
+    {MITEM_BREAK},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MAINBOARD_MODEL},
+    {MITEM_TAB},
+    {MITEM_STRING, SUM_BOARD_ID_BOARD_NAME, MITEM_FLAG_READONLY},
+    {MITEM_BREAK},
+
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SERIAL_NUMBER},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, SUM_BOARD2_ID_SERIAL, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 7},
+    {MITEM_BREAK},
+
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MODEL_ID},
+    {MITEM_TAB},
+    {MITEM_VALUE, SUM_BOARD2_ID_MODEL_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 6},
+    {MITEM_TAB},
+    {MITEM_STRING, SUM_BOARD2_ID_MODEL_ID_DESC, MITEM_FLAG_READONLY},
+    {MITEM_BREAK},
+
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_EMCS_ID},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, SUM_BOARD2_ID_EMCS_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_STRING, SUM_BOARD2_ID_EMCS_ID_DESC, MITEM_FLAG_READONLY},
+    {MITEM_BREAK},
+
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ROMVER},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_STRING, SUM_ROM_ID_ROMVER, MITEM_FLAG_READONLY},
+    {MITEM_BREAK},
+    {MITEM_BREAK},
+
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DVDPL},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_STRING, SUM_ROM_ID_DVDPLVER, MITEM_FLAG_READONLY},
+    {MITEM_BREAK},
+    {MITEM_BREAK},
+
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MECHACON_REVISION},
+    {MITEM_TAB},
+    {MITEM_VALUE, SUM_BOARD2_ID_MECHA_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_DOT},
+    {MITEM_VALUE, SUM_BOARD2_ID_MECHA_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 2},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_STRING, SUM_BOARD2_ID_MECHA_NAME, MITEM_FLAG_READONLY},
+    {MITEM_BREAK},
+
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_EE},
-    {MITEM_SEPERATOR},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_IMPLEMENTATION},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, EEGS_ID_EE_IMPL, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
-    {MITEM_BREAK},
+    {MITEM_SPACE},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_REVISION},
     {MITEM_TAB},
     {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, EEGS_ID_EE_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_VALUE, SUM_EEGS_ID_EE_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_DOT},
-    {MITEM_VALUE, EEGS_ID_EE_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
-    {MITEM_BREAK},
-    {MITEM_TAB},
-    {MITEM_STRING, EEGS_ID_EE_NAME, MITEM_FLAG_READONLY},
-    {MITEM_BREAK},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_FPU_IMPLEMENTATION},
+    {MITEM_VALUE, SUM_EEGS_ID_EE_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 2},
     {MITEM_TAB},
     {MITEM_TAB},
-    {MITEM_VALUE, EEGS_ID_EE_FPU_IMPL, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
-    {MITEM_BREAK},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_FPU_REVISION},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, EEGS_ID_EE_FPU_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
-    {MITEM_DOT},
-    {MITEM_VALUE, EEGS_ID_EE_FPU_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
-    {MITEM_BREAK},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ICACHE_SIZE},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, EEGS_ID_EE_ICACHE_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
-    {MITEM_TAB},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_KB},
-    {MITEM_BREAK},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DCACHE_SIZE},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, EEGS_ID_EE_DCACHE_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
-    {MITEM_TAB},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_KB},
-    {MITEM_BREAK},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_RAM_SIZE},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, EEGS_ID_EE_RAM_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
-    {MITEM_TAB},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_BYTES},
+    {MITEM_STRING, SUM_EEGS_ID_EE_NAME, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
 
-    {MITEM_BREAK},
-
-    //GS
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_GS},
-    {MITEM_SEPERATOR},
+    {MITEM_SPACE},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_REVISION},
     {MITEM_TAB},
     {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, EEGS_ID_GS_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_VALUE, SUM_EEGS_ID_GS_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_DOT},
-    {MITEM_VALUE, EEGS_ID_GS_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 0},
-    {MITEM_BREAK},
-    {MITEM_TAB},
-    {MITEM_STRING, EEGS_ID_GS_NAME, MITEM_FLAG_READONLY},
-    {MITEM_BREAK},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ID},
+    {MITEM_VALUE, SUM_EEGS_ID_GS_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 2},
     {MITEM_TAB},
     {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, EEGS_ID_GS_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
+    {MITEM_STRING, SUM_EEGS_ID_GS_NAME, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
 
-    {MITEM_TERMINATOR}};
-
-static struct UIMenuItem IOPSPU2MenuItems[] = {
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SYS_INFO}, {MITEM_BREAK}, {MITEM_BREAK},
-
-    //IOP
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_IOP},
-    {MITEM_SEPERATOR},
+//    {MITEM_SPACE},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_REVISION},
     {MITEM_TAB},
     {MITEM_TAB},
-    {MITEM_VALUE, IOPSPU2_ID_IOP_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 0},
+    {MITEM_VALUE, SUM_IOPSPU2_ID_IOP_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 0},
     {MITEM_DOT},
-    {MITEM_VALUE, IOPSPU2_ID_IOP_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 0},
-    {MITEM_BREAK},
-    {MITEM_TAB},
-    {MITEM_STRING, IOPSPU2_ID_IOP_NAME, MITEM_FLAG_READONLY},
-    {MITEM_BREAK},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_RAM_SIZE},
+    {MITEM_VALUE, SUM_IOPSPU2_ID_IOP_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 2},
     {MITEM_TAB},
     {MITEM_TAB},
-    {MITEM_VALUE, IOPSPU2_ID_IOP_RAM_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 0},
-    {MITEM_TAB},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_BYTES},
-    {MITEM_BREAK},
-
-    {MITEM_BREAK},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SPU2},
-    {MITEM_SEPERATOR},
-
-    //SPU
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_REVISION},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, IOPSPU2_ID_SPU2_REV, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 0},
-    {MITEM_BREAK},
-    {MITEM_TAB},
-    {MITEM_STRING, IOPSPU2_ID_SPU2_NAME, MITEM_FLAG_READONLY},
+    {MITEM_STRING, SUM_IOPSPU2_ID_IOP_NAME, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
 
     {MITEM_TERMINATOR}};
 
 static struct UIMenuItem BoardMenuItems[] = {
+//Mainboard, model and various params
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SYS_INFO}, {MITEM_BREAK}, {MITEM_BREAK},
 
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MAINBOARD},
-    {MITEM_SEPERATOR},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_VALUE},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DATABASE},
+    {MITEM_SEPARATOR},
 
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MODEL},
-    {MITEM_TAB},
-    {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_STRING, BOARD_ID_MODEL_NAME, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MAINBOARD_MODEL},
     {MITEM_TAB},
-    {MITEM_TAB},
     {MITEM_STRING, BOARD_ID_BOARD_NAME, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_CHASSIS_MODEL},
-    {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_STRING, BOARD_ID_CHASSIS_NAME, MITEM_FLAG_READONLY},
@@ -352,11 +372,9 @@ static struct UIMenuItem BoardMenuItems[] = {
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MACHINE_TYPE},
     {MITEM_TAB},
     {MITEM_TAB},
-    {MITEM_TAB},
     {MITEM_VALUE, BOARD_ID_MACHINE_TYPE, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 8, 0},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MPU_BOARD_ID},
-    {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_VALUE, BOARD_ID_MPU_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 4},
@@ -364,25 +382,32 @@ static struct UIMenuItem BoardMenuItems[] = {
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_BOARD_INF},
     {MITEM_TAB},
     {MITEM_TAB},
-    {MITEM_TAB},
     {MITEM_VALUE, BOARD_ID_BOARD_INF, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
+    {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_STRING, BOARD_ID_MRP_DESC, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SSBUSIF_REVISION},
     {MITEM_TAB},
-    {MITEM_TAB},
     {MITEM_VALUE, BOARD_ID_SSBUSIF_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_DOT},
     {MITEM_VALUE, BOARD_ID_SSBUSIF_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 0},
+    {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_STRING, BOARD_ID_SSBUSIF_NAME, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_AIF_REVISION},
     {MITEM_TAB},
     {MITEM_TAB},
-    {MITEM_TAB},
     {MITEM_VALUE, BOARD_ID_AIF_REV, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_BREAK},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ADD010},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, BOARD2_ID_ADD010, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 4},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_STRING, BOARD2_ID_ADD010_DESC, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
 
     {MITEM_TERMINATOR}};
@@ -391,25 +416,26 @@ static struct UIMenuItem Board2MenuItems[] = {
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SYS_INFO}, {MITEM_BREAK}, {MITEM_BREAK},
 
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MAINBOARD},
-    {MITEM_SEPERATOR},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_VALUE},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DATABASE},
+    {MITEM_SEPARATOR},
 
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MECHACON_REVISION},
     {MITEM_TAB},
-    {MITEM_TAB},
     {MITEM_VALUE, BOARD2_ID_MECHA_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_DOT},
-    {MITEM_VALUE, BOARD2_ID_MECHA_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 0},
-    {MITEM_BREAK},
-    {MITEM_TAB},
-    {MITEM_TAB},
+    {MITEM_VALUE, BOARD2_ID_MECHA_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 2},
     {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_STRING, BOARD2_ID_MECHA_NAME, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MAGICGATE_REGION},
     {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, BOARD2_ID_MECHA_REGION, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 0},
+    {MITEM_VALUE, BOARD2_ID_MECHA_REGION, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
     {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_STRING, BOARD2_ID_MECHA_REGION_NAME, MITEM_FLAG_READONLY},
@@ -417,23 +443,10 @@ static struct UIMenuItem Board2MenuItems[] = {
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SYSTEM_TYPE},
     {MITEM_TAB},
     {MITEM_TAB},
-    {MITEM_TAB},
     {MITEM_VALUE, BOARD2_ID_MECHA_TYPE, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
-    {MITEM_BREAK},
-    {MITEM_TAB},
-    {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_STRING, BOARD2_ID_MECHA_TYPE_NAME, MITEM_FLAG_READONLY},
-    {MITEM_BREAK},
-    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ADD010},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, BOARD2_ID_ADD010, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 4},
-    {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_STRING, BOARD2_ID_ADD010_DESC, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
 
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_M_RENEWAL_DATE},
@@ -449,7 +462,16 @@ static struct UIMenuItem Board2MenuItems[] = {
     {MITEM_COLON},
     {MITEM_VALUE, BOARD2_ID_MECHA_RENEWAL_MINUTE, MITEM_FLAG_READONLY, MITEM_FORMAT_HEX, 2},
     {MITEM_BREAK},
-    {MITEM_SEPERATOR},
+
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DSP_REVISION},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, BOARD2_ID_DSP_REV, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_STRING, BOARD2_ID_DSP_NAME, MITEM_FLAG_READONLY},
+    {MITEM_BREAK},
+    {MITEM_SEPARATOR},
     {MITEM_BREAK},
 
     //IDs
@@ -458,18 +480,28 @@ static struct UIMenuItem Board2MenuItems[] = {
     {MITEM_TAB},
     {MITEM_VALUE, BOARD2_ID_SERIAL, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 7},
     {MITEM_BREAK},
+
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_MODEL_ID},
-    {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_VALUE, BOARD2_ID_MODEL_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 6},
     {MITEM_TAB},
     {MITEM_STRING, BOARD2_ID_MODEL_ID_DESC, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
+
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_CON_MODEL_ID},
     {MITEM_TAB},
-    {MITEM_TAB},
-    {MITEM_VALUE, BOARD2_ID_CON_MODEL_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 4},
+    {MITEM_SPACE},
+    {MITEM_SPACE},
+    {MITEM_SPACE},
+    {MITEM_SPACE},
+    {MITEM_VALUE, BOARD2_ID_CON_MODEL_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
     {MITEM_BREAK},
+
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SDMI_COMPANY_ID},
+    {MITEM_TAB},
+    {MITEM_VALUE, BOARD2_ID_SDMI_COMPANY_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 6},
+    {MITEM_BREAK},
+
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_EMCS_ID},
     {MITEM_TAB},
     {MITEM_TAB},
@@ -523,67 +555,59 @@ static struct UIMenuItem ROMMenuItems[] = {
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SYS_INFO}, {MITEM_BREAK}, {MITEM_BREAK},
 
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ROM_REGIONS},
-    {MITEM_SEPERATOR},
+    {MITEM_SEPARATOR},
 
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ROM0},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_ROM0_ADDR, MITEM_FLAG_READONLY, MITEM_FORMAT_POINTER},
-    {MITEM_DASH},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_ROM0_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
-    {MITEM_TAB},
+    {MITEM_SPACE},
     {MITEM_LABEL, ROM_ID_ROM0_BYTES_LBL, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_BYTES},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ROM1},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_ROM1_ADDR, MITEM_FLAG_READONLY, MITEM_FORMAT_POINTER},
-    {MITEM_DASH},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_ROM1_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
-    {MITEM_TAB},
+    {MITEM_SPACE},
     {MITEM_LABEL, ROM_ID_ROM1_BYTES_LBL, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_BYTES},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ROM2},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_ROM2_ADDR, MITEM_FLAG_READONLY, MITEM_FORMAT_POINTER},
-    {MITEM_DASH},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_ROM2_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
-    {MITEM_TAB},
+    {MITEM_SPACE},
     {MITEM_LABEL, ROM_ID_ROM2_BYTES_LBL, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_BYTES},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_EROM},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_EROM_ADDR, MITEM_FLAG_READONLY, MITEM_FORMAT_POINTER},
-    {MITEM_DASH},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_EROM_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
-    {MITEM_TAB},
+    {MITEM_SPACE},
     {MITEM_LABEL, ROM_ID_EROM_BYTES_LBL, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_BYTES},
     {MITEM_BREAK},
 
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ROM_CHIPS},
-    {MITEM_SEPERATOR},
+    {MITEM_SEPARATOR},
 
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_BOOT_ROM},
     {MITEM_TAB},
-    {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_BOOT_ROM_ADDR, MITEM_FLAG_READONLY, MITEM_FORMAT_POINTER},
-    {MITEM_DASH},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_BOOT_ROM_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
-    {MITEM_TAB},
+    {MITEM_SPACE},
     {MITEM_LABEL, ROM_ID_BOOT_ROM_MBIT_LBL, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_MBIT},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DVD_ROM},
     {MITEM_TAB},
-    {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_DVD_ROM_ADDR, MITEM_FLAG_READONLY, MITEM_FORMAT_POINTER},
-    {MITEM_DASH},
     {MITEM_TAB},
     {MITEM_VALUE, ROM_ID_DVD_ROM_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
-    {MITEM_TAB},
+    {MITEM_SPACE},
     {MITEM_LABEL, ROM_ID_DVD_ROM_MBIT_LBL, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_MBIT},
     {MITEM_BREAK},
     {MITEM_LABEL, ROM_ID_ROM_UNCLEAN, 0, 0, 0, 0, 0, SYS_UI_LBL_ROM_UNCLEAN},
@@ -618,11 +642,150 @@ static struct UIMenuItem ROMMenuItems[] = {
 
     {MITEM_TERMINATOR}};
 
+static struct UIMenuItem EEGSMenuItems[] = {
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SYS_INFO}, {MITEM_BREAK}, {MITEM_BREAK},
+
+    //EE
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_EE},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_VALUE},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DATABASE},
+    {MITEM_SEPARATOR},
+
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_REVISION},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, EEGS_ID_EE_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_DOT},
+    {MITEM_VALUE, EEGS_ID_EE_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 2},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_STRING, EEGS_ID_EE_NAME, MITEM_FLAG_READONLY},
+    {MITEM_BREAK},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_IMPLEMENTATION},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, EEGS_ID_EE_IMPL, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
+    {MITEM_BREAK},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_FPU_REVISION},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, EEGS_ID_EE_FPU_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_DOT},
+    {MITEM_VALUE, EEGS_ID_EE_FPU_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_BREAK},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_FPU_IMPLEMENTATION},
+    {MITEM_TAB},
+    {MITEM_VALUE, EEGS_ID_EE_FPU_IMPL, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
+    {MITEM_BREAK},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ICACHE_SIZE},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, EEGS_ID_EE_ICACHE_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_SPACE},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_KB},
+    {MITEM_BREAK},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DCACHE_SIZE},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, EEGS_ID_EE_DCACHE_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_SPACE},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_KB},
+    {MITEM_BREAK},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_RAM_SIZE},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, EEGS_ID_EE_RAM_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_SPACE},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_BYTES},
+    {MITEM_BREAK},
+
+    {MITEM_BREAK},
+
+    //GS
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_GS},
+    {MITEM_SEPARATOR},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_REVISION},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, EEGS_ID_GS_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
+    {MITEM_DOT},
+    {MITEM_VALUE, EEGS_ID_GS_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 2},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_STRING, EEGS_ID_GS_NAME, MITEM_FLAG_READONLY},
+    {MITEM_BREAK},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ID},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, EEGS_ID_GS_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
+    {MITEM_BREAK},
+
+    {MITEM_TERMINATOR}};
+
+static struct UIMenuItem IOPSPU2MenuItems[] = {
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SYS_INFO}, {MITEM_BREAK}, {MITEM_BREAK},
+
+    //IOP
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_IOP},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_VALUE},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DATABASE},
+    {MITEM_SEPARATOR},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_REVISION},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, IOPSPU2_ID_IOP_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 0},
+    {MITEM_DOT},
+    {MITEM_VALUE, IOPSPU2_ID_IOP_REV_MINOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 2},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_STRING, IOPSPU2_ID_IOP_NAME, MITEM_FLAG_READONLY},
+    {MITEM_BREAK},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_RAM_SIZE},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, IOPSPU2_ID_IOP_RAM_SIZE, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 0},
+    {MITEM_SPACE},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_UNIT_BYTES},
+    {MITEM_BREAK},
+
+    {MITEM_BREAK},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SPU2},
+    {MITEM_SEPARATOR},
+
+    //SPU
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_REVISION},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_VALUE, IOPSPU2_ID_SPU2_REV, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC, 0},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_STRING, IOPSPU2_ID_SPU2_NAME, MITEM_FLAG_READONLY},
+    {MITEM_BREAK},
+
+    {MITEM_TERMINATOR}};
+
 static struct UIMenuItem DEV9MenuItems[] = {
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SYS_INFO}, {MITEM_BREAK}, {MITEM_BREAK},
 
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DEV9},
-    {MITEM_SEPERATOR},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_VALUE},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DATABASE},
+    {MITEM_SEPARATOR},
 
     {MITEM_LABEL, DEV9_ID_NO_DEVICE, 0, 0, 0, 0, 0, SYS_UI_LBL_NO_EXPANSION_DEVICE},
 
@@ -631,6 +794,7 @@ static struct UIMenuItem DEV9MenuItems[] = {
     {MITEM_TAB},
     {MITEM_VALUE, DEV9_ID_SPEED_REV, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 4},
     {MITEM_TAB},
+    {MITEM_TAB},
     {MITEM_STRING, DEV9_ID_SPEED_NAME, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
     {MITEM_LABEL, DEV9_ID_SPEED_CAPS_LBL, 0, 0, 0, 0, 0, SYS_UI_LBL_SPEED_CAPS},
@@ -638,7 +802,6 @@ static struct UIMenuItem DEV9MenuItems[] = {
     {MITEM_VALUE, DEV9_ID_SPEED_CAPS, MITEM_FLAG_READONLY, MITEM_FORMAT_HEX, 4},
     {MITEM_DOT, DEV9_ID_SPEED_CAPS_SEP},
     {MITEM_VALUE, DEV9_ID_SPEED_REV8, MITEM_FLAG_READONLY, MITEM_FORMAT_HEX, 4},
-    {MITEM_BREAK},
     {MITEM_TAB},
     {MITEM_STRING, DEV9_ID_SPEED_CAPS_DESC, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
@@ -664,7 +827,6 @@ static struct UIMenuItem DEV9MenuItems[] = {
     {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_VALUE, DEV9_ID_PHY_VENDOR_OUI, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 6},
-    {MITEM_BREAK},
     {MITEM_TAB},
     {MITEM_STRING, DEV9_ID_PHY_VENDOR_NAME, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
@@ -673,6 +835,7 @@ static struct UIMenuItem DEV9MenuItems[] = {
     {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_VALUE, DEV9_ID_PHY_MODEL, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
+    {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_STRING, DEV9_ID_PHY_MODEL_DESC, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
@@ -688,9 +851,16 @@ static struct UIMenuItem ExtBusMenuItems[] = {
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_SYS_INFO}, {MITEM_BREAK}, {MITEM_BREAK},
 
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_USB},
-    {MITEM_SEPERATOR},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_VALUE},
+    {MITEM_TAB},
+    {MITEM_TAB},
+    {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_DATABASE},
+    {MITEM_SEPARATOR},
 
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_HC_REVISION},
+    {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_VALUE, EXTBUS_ID_USB_HC_REV_MAJOR, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_DOT},
@@ -699,14 +869,16 @@ static struct UIMenuItem ExtBusMenuItems[] = {
 
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ILINK},
-    {MITEM_SEPERATOR},
+    {MITEM_SEPARATOR},
 
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ILINK_PORTS},
+    {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_VALUE, EXTBUS_ID_ILINK_PORTS, MITEM_FLAG_READONLY, MITEM_FORMAT_UDEC},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ILINK_MAX_SPEED},
+    {MITEM_TAB},
     {MITEM_TAB},
     {MITEM_VALUE, EXTBUS_ID_ILINK_MAX_SPEED, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
     {MITEM_TAB},
@@ -715,6 +887,7 @@ static struct UIMenuItem ExtBusMenuItems[] = {
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ILINK_COMPLIANCE},
     {MITEM_TAB},
+    {MITEM_TAB},
     {MITEM_VALUE, EXTBUS_ID_ILINK_COMPLIANCE, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 2},
     {MITEM_TAB},
     {MITEM_TAB},
@@ -722,31 +895,35 @@ static struct UIMenuItem ExtBusMenuItems[] = {
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ILINK_VENDOR_ID},
     {MITEM_TAB},
+    {MITEM_TAB},
     {MITEM_VALUE, EXTBUS_ID_ILINK_VENDOR_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 6},
     {MITEM_TAB},
     {MITEM_STRING, EXTBUS_ID_ILINK_VENDOR_DESC, MITEM_FLAG_READONLY},
     {MITEM_BREAK},
     {MITEM_LABEL, 0, 0, 0, 0, 0, 0, SYS_UI_LBL_ILINK_PRODUCT_ID},
     {MITEM_TAB},
+    {MITEM_TAB},
     {MITEM_VALUE, EXTBUS_ID_ILINK_PRODUCT_ID, MITEM_FLAG_READONLY | MITEM_FLAG_UNIT_PREFIX, MITEM_FORMAT_HEX, 6},
     {MITEM_BREAK},
     {MITEM_TERMINATOR}};
 
 //Forward declarations
-static struct UIMenu EEGSReportMenu;
-static struct UIMenu IOPSPU2ReportMenu;
+static struct UIMenu SummaryMenu;
 static struct UIMenu BoardReportMenu;
 static struct UIMenu Board2ReportMenu;
 static struct UIMenu ROMReportMenu;
+static struct UIMenu EEGSReportMenu;
+static struct UIMenu IOPSPU2ReportMenu;
 static struct UIMenu DEV9ReportMenu;
 static struct UIMenu ExtBusReportMenu;
 
-static struct UIMenu EEGSReportMenu    = {NULL, &IOPSPU2ReportMenu, EEGSMenuItems, {{BUTTON_TYPE_START, SYS_UI_LBL_DUMP}, {BUTTON_TYPE_SYS_CANCEL, SYS_UI_LBL_QUIT}}};
-static struct UIMenu IOPSPU2ReportMenu = {&EEGSReportMenu, &BoardReportMenu, IOPSPU2MenuItems, {{BUTTON_TYPE_START, SYS_UI_LBL_DUMP}, {BUTTON_TYPE_SYS_CANCEL, SYS_UI_LBL_QUIT}}};
-static struct UIMenu BoardReportMenu   = {&IOPSPU2ReportMenu, &Board2ReportMenu, BoardMenuItems, {{BUTTON_TYPE_START, SYS_UI_LBL_DUMP}, {BUTTON_TYPE_SYS_CANCEL, SYS_UI_LBL_QUIT}}};
+static struct UIMenu SummaryMenu       = {NULL, &BoardReportMenu, SummaryMenuItems, {{BUTTON_TYPE_START, SYS_UI_LBL_DUMP}, {BUTTON_TYPE_SYS_CANCEL, SYS_UI_LBL_QUIT}}};
+static struct UIMenu BoardReportMenu   = {&SummaryMenu, &Board2ReportMenu, BoardMenuItems, {{BUTTON_TYPE_START, SYS_UI_LBL_DUMP}, {BUTTON_TYPE_SYS_CANCEL, SYS_UI_LBL_QUIT}}};
 static struct UIMenu Board2ReportMenu  = {&BoardReportMenu, &ROMReportMenu, Board2MenuItems, {{BUTTON_TYPE_START, SYS_UI_LBL_DUMP}, {BUTTON_TYPE_SYS_CANCEL, SYS_UI_LBL_QUIT}}};
-static struct UIMenu ROMReportMenu     = {&BoardReportMenu, &DEV9ReportMenu, ROMMenuItems, {{BUTTON_TYPE_START, SYS_UI_LBL_DUMP}, {BUTTON_TYPE_SYS_CANCEL, SYS_UI_LBL_QUIT}}};
-static struct UIMenu DEV9ReportMenu    = {&ROMReportMenu, &ExtBusReportMenu, DEV9MenuItems, {{BUTTON_TYPE_START, SYS_UI_LBL_DUMP}, {BUTTON_TYPE_SYS_CANCEL, SYS_UI_LBL_QUIT}}};
+static struct UIMenu ROMReportMenu     = {&Board2ReportMenu, &EEGSReportMenu, ROMMenuItems, {{BUTTON_TYPE_START, SYS_UI_LBL_DUMP}, {BUTTON_TYPE_SYS_CANCEL, SYS_UI_LBL_QUIT}}};
+static struct UIMenu EEGSReportMenu    = {&ROMReportMenu, &IOPSPU2ReportMenu, EEGSMenuItems, {{BUTTON_TYPE_START, SYS_UI_LBL_DUMP}, {BUTTON_TYPE_SYS_CANCEL, SYS_UI_LBL_QUIT}}};
+static struct UIMenu IOPSPU2ReportMenu = {&EEGSReportMenu, &DEV9ReportMenu, IOPSPU2MenuItems, {{BUTTON_TYPE_START, SYS_UI_LBL_DUMP}, {BUTTON_TYPE_SYS_CANCEL, SYS_UI_LBL_QUIT}}};
+static struct UIMenu DEV9ReportMenu    = {&IOPSPU2ReportMenu, &ExtBusReportMenu, DEV9MenuItems, {{BUTTON_TYPE_START, SYS_UI_LBL_DUMP}, {BUTTON_TYPE_SYS_CANCEL, SYS_UI_LBL_QUIT}}};
 static struct UIMenu ExtBusReportMenu  = {&DEV9ReportMenu, NULL, ExtBusMenuItems, {{BUTTON_TYPE_START, SYS_UI_LBL_DUMP}, {BUTTON_TYPE_SYS_CANCEL, SYS_UI_LBL_QUIT}}};
 
 /*
@@ -820,7 +997,7 @@ static int GetUserSaveDeviceSelection(char *SelectedDevice, const struct Require
         SYS_UI_LBL_DEV_MC,
         SYS_UI_LBL_DEV_MASS,
 #ifdef DSNET_HOST_SUPPORT
-        SYS_UI_LBL_DEV_MASS,
+        SYS_UI_LBL_DEV_HOST,
 #endif
     };
     static const unsigned int IconFileSelMenuDevUnitStringIDs[NUM_SUPPORTED_DEVICES] = {
@@ -938,10 +1115,22 @@ static int GetUserSaveDeviceSelection(char *SelectedDevice, const struct Require
                     sprintf(SelectedDevice, "%s%u:", devices[SelectedDeviceIndex].name, devices[SelectedDeviceIndex].unit);
                     result = 0;
                     done   = 1;
+                    DumpLargeRoms = 1;
                 }
                 else if (result == 0)
                 {
-                    DisplayErrorMessage(SYS_UI_MSG_INSUF_SPACE_ERR);
+                    // try to dump only logs and eeprom if no free space
+                    DumpLargeRoms = 0;
+                    if ((result = GetHasDeviceSufficientSpace(devices[SelectedDeviceIndex].name, devices[SelectedDeviceIndex].unit, RequiredSpaceStats, 3)) == 1)
+                    {
+                        sprintf(SelectedDevice, "%s%u:", devices[SelectedDeviceIndex].name, devices[SelectedDeviceIndex].unit);
+                        result = 0;
+                        done   = 1;
+                    }
+                    else if (result == 0)
+                    {
+                        DisplayErrorMessage(SYS_UI_MSG_INSUF_SPACE_ERR);
+                    }
                 }
                 else
                 {
@@ -986,7 +1175,7 @@ static int DumpSystemROMScreen(const struct SystemInformation *SystemInformation
     RequiredSpace[1].IsFile = 1;
     RequiredSpace[1].length = 1024;
 
-    //Log file
+    //Log files + database
     RequiredSpace[2].IsFile = 1;
     RequiredSpace[2].length = 2048; //Shouldn't get larger than this.
 
@@ -1042,53 +1231,22 @@ static int DumpSystemROMScreen(const struct SystemInformation *SystemInformation
     return 0;
 }
 
-static void LoadEEGSInformation(const struct SystemInformation *SystemInformation)
-{
-    //EE
-    UISetValue(&EEGSReportMenu, EEGS_ID_EE_IMPL, SystemInformation->mainboard.ee.implementation);
-    UISetValue(&EEGSReportMenu, EEGS_ID_EE_REV_MAJOR, SystemInformation->mainboard.ee.revision >> 4);
-    UISetValue(&EEGSReportMenu, EEGS_ID_EE_REV_MINOR, SystemInformation->mainboard.ee.revision & 0xF);
-    UISetString(&EEGSReportMenu, EEGS_ID_EE_NAME, GetEEChipDesc((u16)(SystemInformation->mainboard.ee.implementation) << 8 | SystemInformation->mainboard.ee.revision));
-    UISetValue(&EEGSReportMenu, EEGS_ID_EE_FPU_IMPL, SystemInformation->mainboard.ee.FPUImplementation);
-    UISetValue(&EEGSReportMenu, EEGS_ID_EE_FPU_REV_MAJOR, SystemInformation->mainboard.ee.FPURevision >> 4);
-    UISetValue(&EEGSReportMenu, EEGS_ID_EE_FPU_REV_MINOR, SystemInformation->mainboard.ee.FPURevision & 0xF);
-    UISetValue(&EEGSReportMenu, EEGS_ID_EE_ICACHE_SIZE, CalculateCPUCacheSize(SystemInformation->mainboard.ee.ICacheSize) / 1024);
-    UISetValue(&EEGSReportMenu, EEGS_ID_EE_DCACHE_SIZE, CalculateCPUCacheSize(SystemInformation->mainboard.ee.DCacheSize) / 1024);
-    UISetValue(&EEGSReportMenu, EEGS_ID_EE_RAM_SIZE, SystemInformation->mainboard.ee.RAMSize);
-
-    //GS
-    UISetValue(&EEGSReportMenu, EEGS_ID_GS_REV_MAJOR, SystemInformation->mainboard.gs.revision >> 4);
-    UISetValue(&EEGSReportMenu, EEGS_ID_GS_REV_MINOR, SystemInformation->mainboard.gs.revision & 0xF);
-    UISetString(&EEGSReportMenu, EEGS_ID_GS_NAME, GetGSChipDesc((u16)(SystemInformation->mainboard.gs.id) << 8 | SystemInformation->mainboard.gs.revision));
-
-    UISetValue(&EEGSReportMenu, EEGS_ID_GS_ID, SystemInformation->mainboard.gs.id);
-}
-
-static void LoadIOPSPU2Information(const struct SystemInformation *SystemInformation)
-{
-    //IOP
-    UISetValue(&IOPSPU2ReportMenu, IOPSPU2_ID_IOP_REV_MAJOR, SystemInformation->mainboard.iop.revision >> 4);
-    UISetValue(&IOPSPU2ReportMenu, IOPSPU2_ID_IOP_REV_MINOR, SystemInformation->mainboard.iop.revision & 0xF);
-    UISetString(&IOPSPU2ReportMenu, IOPSPU2_ID_IOP_NAME, GetIOPChipDesc(SystemInformation->mainboard.iop.revision));
-    UISetValue(&IOPSPU2ReportMenu, IOPSPU2_ID_IOP_RAM_SIZE, SystemInformation->mainboard.iop.RAMSize);
-
-    //SPU2
-    UISetValue(&IOPSPU2ReportMenu, IOPSPU2_ID_SPU2_REV, SystemInformation->mainboard.spu2.revision);
-    UISetString(&IOPSPU2ReportMenu, IOPSPU2_ID_SPU2_NAME, GetSPU2ChipDesc(SystemInformation->mainboard.spu2.revision));
-}
-
 static void LoadBoardInformation(const struct SystemInformation *SystemInformation)
 {
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MNAME))
     {
         UISetType(&BoardReportMenu, BOARD_ID_MODEL_NAME, MITEM_STRING);
         UISetString(&BoardReportMenu, BOARD_ID_MODEL_NAME, SystemInformation->mainboard.ModelName);
+        UISetType(&SummaryMenu, SUM_BOARD_ID_MODEL_NAME, MITEM_STRING);
+        UISetString(&SummaryMenu, SUM_BOARD_ID_MODEL_NAME, SystemInformation->mainboard.ModelName);
     }
     else
     {
         UISetType(&BoardReportMenu, BOARD_ID_MODEL_NAME, MITEM_DASH);
+        UISetType(&SummaryMenu, SUM_BOARD_ID_MODEL_NAME, MITEM_DASH);
     }
     UISetString(&BoardReportMenu, BOARD_ID_BOARD_NAME, SystemInformation->mainboard.MainboardName);
+    UISetString(&SummaryMenu, SUM_BOARD_ID_BOARD_NAME, SystemInformation->mainboard.MainboardName);
     UISetString(&BoardReportMenu, BOARD_ID_CHASSIS_NAME, SystemInformation->chassis);
     UISetValue(&BoardReportMenu, BOARD_ID_MACHINE_TYPE, SystemInformation->mainboard.MachineType);
     UISetValue(&BoardReportMenu, BOARD_ID_MPU_ID, SystemInformation->mainboard.MPUBoardID);
@@ -1111,7 +1269,7 @@ static void LoadBoardInformation(const struct SystemInformation *SystemInformati
 static void LoadBoard2Information(const struct SystemInformation *SystemInformation)
 {
     u32 modelID;
-    u16 conModelID;
+    // u16 conModelID;
 
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_MVER))
     {
@@ -1121,6 +1279,13 @@ static void LoadBoard2Information(const struct SystemInformation *SystemInformat
         UISetValue(&Board2ReportMenu, BOARD2_ID_MECHA_REV_MINOR, SystemInformation->mainboard.MECHACONVersion[2]);
         UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_NAME, MITEM_STRING);
         UISetString(&Board2ReportMenu, BOARD2_ID_MECHA_NAME, GetMECHACONChipDesc((u32)(SystemInformation->mainboard.MECHACONVersion[1]) << 8 | (u32)(SystemInformation->mainboard.MECHACONVersion[2])));
+        UISetType(&SummaryMenu, SUM_BOARD2_ID_MECHA_REV_MAJOR, MITEM_VALUE);
+        UISetValue(&SummaryMenu, SUM_BOARD2_ID_MECHA_REV_MAJOR, SystemInformation->mainboard.MECHACONVersion[1]);
+        UISetType(&SummaryMenu, SUM_BOARD2_ID_MECHA_REV_MINOR, MITEM_VALUE);
+        UISetValue(&SummaryMenu, SUM_BOARD2_ID_MECHA_REV_MINOR, SystemInformation->mainboard.MECHACONVersion[2]);
+        UISetType(&SummaryMenu, SUM_BOARD2_ID_MECHA_NAME, MITEM_STRING);
+        UISetString(&SummaryMenu, SUM_BOARD2_ID_MECHA_NAME, GetMECHACONChipDesc((u32)(SystemInformation->mainboard.MECHACONVersion[1]) << 8 | (u32)(SystemInformation->mainboard.MECHACONVersion[2])));
+
         UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_REGION, MITEM_VALUE);
         UISetValue(&Board2ReportMenu, BOARD2_ID_MECHA_REGION, SystemInformation->mainboard.MECHACONVersion[0]);
         UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_REGION_NAME, MITEM_STRING);
@@ -1129,6 +1294,12 @@ static void LoadBoard2Information(const struct SystemInformation *SystemInformat
         UISetValue(&Board2ReportMenu, BOARD2_ID_MECHA_TYPE, SystemInformation->mainboard.MECHACONVersion[3]);
         UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_TYPE_NAME, MITEM_STRING);
         UISetString(&Board2ReportMenu, BOARD2_ID_MECHA_TYPE_NAME, GetSystemTypeDesc(SystemInformation->mainboard.MECHACONVersion[3]));
+
+
+        UISetType(&Board2ReportMenu, BOARD2_ID_DSP_REV, MITEM_VALUE);
+        UISetValue(&Board2ReportMenu, BOARD2_ID_DSP_REV, SystemInformation->DSPVersion[1]);
+        UISetType(&Board2ReportMenu, BOARD2_ID_DSP_NAME, MITEM_STRING);
+        UISetString(&Board2ReportMenu, BOARD2_ID_DSP_NAME, GetDSPDesc(SystemInformation->DSPVersion[1]));
     }
     else
     {
@@ -1139,6 +1310,8 @@ static void LoadBoard2Information(const struct SystemInformation *SystemInformat
         UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_REGION_NAME, MITEM_DASH);
         UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_TYPE, MITEM_DASH);
         UISetType(&Board2ReportMenu, BOARD2_ID_MECHA_TYPE_NAME, MITEM_DASH);
+        UISetType(&Board2ReportMenu, BOARD2_ID_DSP_REV, MITEM_DASH);
+        UISetType(&Board2ReportMenu, BOARD2_ID_DSP_NAME, MITEM_DASH);
     }
 
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_ADD010))
@@ -1178,12 +1351,16 @@ static void LoadBoard2Information(const struct SystemInformation *SystemInformat
 
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_ILINKID))
     {
-        modelID = SystemInformation->mainboard.ModelID[0] | SystemInformation->mainboard.ModelID[1] << 8 | SystemInformation->mainboard.ModelID[2] << 16;
+        modelID = (u32)(SystemInformation->mainboard.ModelID[0]) | (u32)(SystemInformation->mainboard.ModelID[1] << 8) | (u32)(SystemInformation->mainboard.ModelID[2]) << 16;
 
         UISetType(&Board2ReportMenu, BOARD2_ID_MODEL_ID, MITEM_VALUE);
         UISetValue(&Board2ReportMenu, BOARD2_ID_MODEL_ID, modelID);
         UISetType(&Board2ReportMenu, BOARD2_ID_MODEL_ID_DESC, MITEM_STRING);
-        UISetString(&Board2ReportMenu, BOARD2_ID_MODEL_ID_DESC, GetModelIDDesc(conModelID));
+        UISetString(&Board2ReportMenu, BOARD2_ID_MODEL_ID_DESC, GetModelIDDesc(modelID));
+        UISetType(&SummaryMenu, SUM_BOARD2_ID_MODEL_ID, MITEM_VALUE);
+        UISetValue(&SummaryMenu, SUM_BOARD2_ID_MODEL_ID, modelID);
+        UISetType(&SummaryMenu, SUM_BOARD2_ID_MODEL_ID_DESC, MITEM_STRING);
+        UISetString(&SummaryMenu, SUM_BOARD2_ID_MODEL_ID_DESC, GetModelIDDesc(modelID));
 
         UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_00, MITEM_VALUE);
         UISetValue(&Board2ReportMenu, BOARD2_ID_ILINK_ID_00, SystemInformation->iLinkID[0]);
@@ -1206,6 +1383,8 @@ static void LoadBoard2Information(const struct SystemInformation *SystemInformat
     {
         UISetType(&Board2ReportMenu, BOARD2_ID_MODEL_ID, MITEM_DASH);
         UISetType(&Board2ReportMenu, BOARD2_ID_MODEL_ID_DESC, MITEM_DASH);
+        UISetType(&SummaryMenu, SUM_BOARD2_ID_MODEL_ID, MITEM_DASH);
+        UISetType(&SummaryMenu, SUM_BOARD2_ID_MODEL_ID_DESC, MITEM_DASH);
 
         UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_00, MITEM_DASH);
         UISetType(&Board2ReportMenu, BOARD2_ID_ILINK_ID_01, MITEM_DASH);
@@ -1219,16 +1398,25 @@ static void LoadBoard2Information(const struct SystemInformation *SystemInformat
 
     if (!(SystemInformation->mainboard.status & PS2IDB_STAT_ERR_CONSOLEID))
     {
-        conModelID = SystemInformation->mainboard.ConModelID[0] | SystemInformation->mainboard.ConModelID[1] << 8;
+        // conModelID = SystemInformation->mainboard.ConModelID[0] | SystemInformation->mainboard.ConModelID[1] << 8;
 
         UISetType(&Board2ReportMenu, BOARD2_ID_SERIAL, MITEM_VALUE);
         UISetValue(&Board2ReportMenu, BOARD2_ID_SERIAL, ((u32)SystemInformation->ConsoleID[6]) << 16 | ((u32)SystemInformation->ConsoleID[5]) << 8 | ((u32)SystemInformation->ConsoleID[4]));
+        UISetType(&SummaryMenu, SUM_BOARD2_ID_SERIAL, MITEM_VALUE);
+        UISetValue(&SummaryMenu, SUM_BOARD2_ID_SERIAL, ((u32)SystemInformation->ConsoleID[6]) << 16 | ((u32)SystemInformation->ConsoleID[5]) << 8 | ((u32)SystemInformation->ConsoleID[4]));
+
         UISetType(&Board2ReportMenu, BOARD2_ID_CON_MODEL_ID, MITEM_VALUE);
-        UISetValue(&Board2ReportMenu, BOARD2_ID_CON_MODEL_ID, conModelID);
+        UISetValue(&Board2ReportMenu, BOARD2_ID_CON_MODEL_ID, SystemInformation->ConsoleID[0]);
+        UISetType(&Board2ReportMenu, BOARD2_ID_SDMI_COMPANY_ID, MITEM_VALUE);
+        UISetValue(&Board2ReportMenu, BOARD2_ID_SDMI_COMPANY_ID, (u32)(SystemInformation->ConsoleID[3] << 16 | (u32)SystemInformation->ConsoleID[2] << 8 | (u32)SystemInformation->ConsoleID[1]));
         UISetType(&Board2ReportMenu, BOARD2_ID_EMCS_ID, MITEM_VALUE);
         UISetValue(&Board2ReportMenu, BOARD2_ID_EMCS_ID, SystemInformation->mainboard.EMCSID);
         UISetType(&Board2ReportMenu, BOARD2_ID_EMCS_ID_DESC, MITEM_STRING);
         UISetString(&Board2ReportMenu, BOARD2_ID_EMCS_ID_DESC, GetEMCSIDDesc(SystemInformation->mainboard.EMCSID));
+        UISetType(&SummaryMenu, SUM_BOARD2_ID_EMCS_ID, MITEM_VALUE);
+        UISetValue(&SummaryMenu, SUM_BOARD2_ID_EMCS_ID, SystemInformation->mainboard.EMCSID);
+        UISetType(&SummaryMenu, SUM_BOARD2_ID_EMCS_ID_DESC, MITEM_STRING);
+        UISetString(&SummaryMenu, SUM_BOARD2_ID_EMCS_ID_DESC, GetEMCSIDDesc(SystemInformation->mainboard.EMCSID));
 
         UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_00, MITEM_VALUE);
         UISetValue(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_00, SystemInformation->ConsoleID[0]);
@@ -1250,9 +1438,12 @@ static void LoadBoard2Information(const struct SystemInformation *SystemInformat
     else
     {
         UISetType(&Board2ReportMenu, BOARD2_ID_SERIAL, MITEM_DASH);
+        UISetType(&SummaryMenu, SUM_BOARD2_ID_SERIAL, MITEM_DASH);
         UISetType(&Board2ReportMenu, BOARD2_ID_CON_MODEL_ID, MITEM_DASH);
         UISetType(&Board2ReportMenu, BOARD2_ID_EMCS_ID, MITEM_DASH);
         UISetType(&Board2ReportMenu, BOARD2_ID_EMCS_ID_DESC, MITEM_DASH);
+        UISetType(&SummaryMenu, SUM_BOARD2_ID_EMCS_ID, MITEM_DASH);
+        UISetType(&SummaryMenu, SUM_BOARD2_ID_EMCS_ID_DESC, MITEM_DASH);
 
         UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_00, MITEM_DASH);
         UISetType(&Board2ReportMenu, BOARD2_ID_CONSOLE_ID_01, MITEM_DASH);
@@ -1372,18 +1563,68 @@ static void LoadROMInformation(const struct SystemInformation *SystemInformation
 
     //Version information
     UISetString(&ROMReportMenu, ROM_ID_ROMVER, SystemInformation->mainboard.romver);
+    UISetString(&SummaryMenu, SUM_ROM_ID_ROMVER, SystemInformation->mainboard.romver);
     UISetValue(&ROMReportMenu, ROM_ID_ROMGEN_MMDD, SystemInformation->mainboard.ROMGEN_MonthDate);
     UISetValue(&ROMReportMenu, ROM_ID_ROMGEN_YYYY, SystemInformation->mainboard.ROMGEN_Year);
     if (SystemInformation->DVDPlayerVer[0] != '\0')
     {
         UISetVisible(&ROMReportMenu, ROM_ID_DVDPLVER, 1);
         UISetString(&ROMReportMenu, ROM_ID_DVDPLVER, SystemInformation->DVDPlayerVer);
+        UISetVisible(&SummaryMenu, SUM_ROM_ID_DVDPLVER, 1);
+        UISetString(&SummaryMenu, SUM_ROM_ID_DVDPLVER, SystemInformation->DVDPlayerVer);
     }
     else
     {
         UISetVisible(&ROMReportMenu, ROM_ID_DVDPLVER, 0);
+        UISetVisible(&SummaryMenu, SUM_ROM_ID_DVDPLVER, 0);
     }
     UISetString(&ROMReportMenu, ROM_ID_PS1DRVVER, SystemInformation->PS1DRVVer);
+}
+
+static void LoadEEGSInformation(const struct SystemInformation *SystemInformation)
+{
+    //EE
+    UISetValue(&EEGSReportMenu, EEGS_ID_EE_IMPL, SystemInformation->mainboard.ee.implementation);
+    UISetValue(&EEGSReportMenu, EEGS_ID_EE_REV_MAJOR, SystemInformation->mainboard.ee.revision >> 4);
+    UISetValue(&EEGSReportMenu, EEGS_ID_EE_REV_MINOR, SystemInformation->mainboard.ee.revision & 0xF);
+    UISetString(&EEGSReportMenu, EEGS_ID_EE_NAME, GetEEChipDesc((u16)(SystemInformation->mainboard.ee.implementation) << 8 | SystemInformation->mainboard.ee.revision));
+    UISetValue(&SummaryMenu, SUM_EEGS_ID_EE_REV_MAJOR, SystemInformation->mainboard.ee.revision >> 4);
+    UISetValue(&SummaryMenu, SUM_EEGS_ID_EE_REV_MINOR, SystemInformation->mainboard.ee.revision & 0xF);
+    UISetString(&SummaryMenu, SUM_EEGS_ID_EE_NAME, GetEEChipDesc((u16)(SystemInformation->mainboard.ee.implementation) << 8 | SystemInformation->mainboard.ee.revision));
+
+    UISetValue(&EEGSReportMenu, EEGS_ID_EE_FPU_IMPL, SystemInformation->mainboard.ee.FPUImplementation);
+    UISetValue(&EEGSReportMenu, EEGS_ID_EE_FPU_REV_MAJOR, SystemInformation->mainboard.ee.FPURevision >> 4);
+    UISetValue(&EEGSReportMenu, EEGS_ID_EE_FPU_REV_MINOR, SystemInformation->mainboard.ee.FPURevision & 0xF);
+    UISetValue(&EEGSReportMenu, EEGS_ID_EE_ICACHE_SIZE, CalculateCPUCacheSize(SystemInformation->mainboard.ee.ICacheSize) / 1024);
+    UISetValue(&EEGSReportMenu, EEGS_ID_EE_DCACHE_SIZE, CalculateCPUCacheSize(SystemInformation->mainboard.ee.DCacheSize) / 1024);
+    UISetValue(&EEGSReportMenu, EEGS_ID_EE_RAM_SIZE, SystemInformation->mainboard.ee.RAMSize);
+
+    //GS
+    UISetValue(&EEGSReportMenu, EEGS_ID_GS_REV_MAJOR, SystemInformation->mainboard.gs.revision >> 4);
+    UISetValue(&EEGSReportMenu, EEGS_ID_GS_REV_MINOR, SystemInformation->mainboard.gs.revision & 0xF);
+    UISetString(&EEGSReportMenu, EEGS_ID_GS_NAME, GetGSChipDesc((u16)(SystemInformation->mainboard.gs.id) << 8 | SystemInformation->mainboard.gs.revision));
+    UISetValue(&SummaryMenu, SUM_EEGS_ID_GS_REV_MAJOR, SystemInformation->mainboard.gs.revision >> 4);
+    UISetValue(&SummaryMenu, SUM_EEGS_ID_GS_REV_MINOR, SystemInformation->mainboard.gs.revision & 0xF);
+    UISetString(&SummaryMenu, SUM_EEGS_ID_GS_NAME, GetGSChipDesc((u16)(SystemInformation->mainboard.gs.id) << 8 | SystemInformation->mainboard.gs.revision));
+
+    UISetValue(&EEGSReportMenu, EEGS_ID_GS_ID, SystemInformation->mainboard.gs.id);
+}
+
+static void LoadIOPSPU2Information(const struct SystemInformation *SystemInformation)
+{
+    //IOP
+    UISetValue(&IOPSPU2ReportMenu, IOPSPU2_ID_IOP_REV_MAJOR, SystemInformation->mainboard.iop.revision >> 4);
+    UISetValue(&IOPSPU2ReportMenu, IOPSPU2_ID_IOP_REV_MINOR, SystemInformation->mainboard.iop.revision & 0xF);
+    UISetString(&IOPSPU2ReportMenu, IOPSPU2_ID_IOP_NAME, GetIOPChipDesc(SystemInformation->mainboard.iop.revision));
+    UISetValue(&SummaryMenu, SUM_IOPSPU2_ID_IOP_REV_MAJOR, SystemInformation->mainboard.iop.revision >> 4);
+    UISetValue(&SummaryMenu, SUM_IOPSPU2_ID_IOP_REV_MINOR, SystemInformation->mainboard.iop.revision & 0xF);
+    UISetString(&SummaryMenu, SUM_IOPSPU2_ID_IOP_NAME, GetIOPChipDesc(SystemInformation->mainboard.iop.revision));
+
+    UISetValue(&IOPSPU2ReportMenu, IOPSPU2_ID_IOP_RAM_SIZE, SystemInformation->mainboard.iop.RAMSize);
+
+    //SPU2
+    UISetValue(&IOPSPU2ReportMenu, IOPSPU2_ID_SPU2_REV, SystemInformation->mainboard.spu2.revision);
+    UISetString(&IOPSPU2ReportMenu, IOPSPU2_ID_SPU2_NAME, GetSPU2ChipDesc(SystemInformation->mainboard.spu2.revision));
 }
 
 static void DEV9MenuDisplay(int DeviceConnected)
@@ -1464,11 +1705,11 @@ static void LoadExtBusInformation(const struct SystemInformation *SystemInformat
 
 static void LoadSystemInformation(const struct SystemInformation *SystemInformation)
 {
-    LoadEEGSInformation(SystemInformation);
-    LoadIOPSPU2Information(SystemInformation);
     LoadBoardInformation(SystemInformation);
     LoadBoard2Information(SystemInformation);
     LoadROMInformation(SystemInformation);
+    LoadEEGSInformation(SystemInformation);
+    LoadIOPSPU2Information(SystemInformation);
     LoadDEV9Information(SystemInformation);
     LoadExtBusInformation(SystemInformation);
 }
@@ -1486,7 +1727,7 @@ int MainMenu(const struct SystemInformation *SystemInformation)
 
     LoadSystemInformation(SystemInformation);
 
-    CurrentMenu = &EEGSReportMenu;
+    CurrentMenu = &SummaryMenu;
     option      = 0;
     done        = 0;
     while (!done)
@@ -1547,9 +1788,14 @@ void RedrawDumpingScreen(const struct SystemInformation *SystemInformation, cons
     DrawBackground(&UIDrawGlobal, &BackgroundTexture);
     FontPrintf(&UIDrawGlobal, 10, 10, 2, 1.0f, GS_WHITE_FONT, GetUILabel(SYS_UI_LBL_DUMP_SCREEN));
 
+    DumpRegions[DUMP_REGION_EEPROM].label   = GetUILabel(SYS_UI_LBL_EEPROM);
     DumpRegions[DUMP_REGION_BOOT_ROM].label = GetUILabel(SYS_UI_LBL_BOOT_ROM);
     DumpRegions[DUMP_REGION_DVD_ROM].label  = GetUILabel(SYS_UI_LBL_DVD_ROM);
-    DumpRegions[DUMP_REGION_EEPROM].label   = GetUILabel(SYS_UI_LBL_EEPROM);
+
+    /* Do not forget about the MECHACON EEPROM. ;) */
+    FontPrintf(&UIDrawGlobal, DumpRegions[DUMP_REGION_EEPROM].SizeLabelX, DumpRegions[DUMP_REGION_EEPROM].SizeLabelY, 2, 1.0f, GS_WHITE_FONT, "1024");
+    FontPrintf(&UIDrawGlobal, DumpRegions[DUMP_REGION_EEPROM].SizeLabelX + 140, DumpRegions[DUMP_REGION_EEPROM].SizeLabelY, 2, 1.0f, GS_WHITE_FONT, GetUILabel(SYS_UI_LBL_UNIT_BYTES));
+    DumpRegions[DUMP_REGION_EEPROM].IsInstalled = 1;
 
     if (SystemInformation->mainboard.BOOT_ROM.IsExists)
     {
@@ -1577,18 +1823,12 @@ void RedrawDumpingScreen(const struct SystemInformation *SystemInformation, cons
         DumpRegions[DUMP_REGION_DVD_ROM].IsInstalled = 0;
     }
 
-    /* Do not forget about the MECHACON EEPROM. ;) */
-    FontPrintf(&UIDrawGlobal, DumpRegions[DUMP_REGION_EEPROM].SizeLabelX, DumpRegions[DUMP_REGION_EEPROM].SizeLabelY, 2, 1.0f, GS_WHITE_FONT, "1024");
-    FontPrintf(&UIDrawGlobal, DumpRegions[DUMP_REGION_EEPROM].SizeLabelX + 140, DumpRegions[DUMP_REGION_EEPROM].SizeLabelY, 2, 1.0f, GS_WHITE_FONT, GetUILabel(SYS_UI_LBL_UNIT_BYTES));
-    DumpRegions[DUMP_REGION_EEPROM].IsInstalled = 1;
-
     for (i = 0; i < DUMP_REGION_COUNT; i++)
     {
         FontPrintf(&UIDrawGlobal, DumpRegions[i].NameLabelX, DumpRegions[i].NameLabelY, 2, 1.0f, GS_WHITE_FONT, DumpRegions[i].label);
 
         endX   = DumpRegions[i].ProgressBarX + PROGRESS_BAR_LENGTH * DumpingStatus[i].progress;
-        colour = DumpingStatus[i].status < 0 ? GS_RED : (DumpingStatus[i].status == 0) ? GS_LGREY :
-                                                                                         GS_GREEN;
+        colour = DumpingStatus[i].status < 0 ? GS_RED : (DumpingStatus[i].status == 0) ? GS_LGREY : GS_GREEN;
         DrawSprite(&UIDrawGlobal, DumpRegions[i].ProgressBarX, DumpRegions[i].ProgressBarY, endX, DumpRegions[i].ProgressBarY + PROGRESS_BAR_HEIGHT, 3, colour);
 
         if (DumpRegions[i].IsInstalled)
@@ -1656,58 +1896,6 @@ static int DumpSystemROM(const char *path, const struct SystemInformation *Syste
     ROMVerLen    = strlen(SystemInformation->mainboard.romver);
 
     filename     = malloc(PathLength + ModelNameLen + 32);
-    if (SystemInformation->mainboard.BOOT_ROM.IsExists)
-    {
-        DEBUG_PRINTF("Dumping Boot ROM at %p, %u bytes...", SystemInformation->mainboard.BOOT_ROM.StartAddress, SystemInformation->mainboard.BOOT_ROM.size);
-
-#ifndef DSNET_HOST_SUPPORT
-        sprintf(filename, "%s/%s_BOOT_ROM.bin", path, SystemInformation->mainboard.ModelName);
-#else
-        sprintf(filename, "%s%s_BOOT_ROM.bin", path, SystemInformation->mainboard.ModelName);
-#endif
-        if ((result = DumpRom(filename, SystemInformation, DumpingStatus, DUMP_REGION_BOOT_ROM)) == 0)
-        {
-            DEBUG_PRINTF("done!\n");
-        }
-        else
-        {
-            DEBUG_PRINTF("failed!\n");
-        }
-    }
-
-    if (SystemInformation->mainboard.DVD_ROM.IsExists)
-    {
-        DEBUG_PRINTF("Dumping DVD ROM at %p, %u bytes...", SystemInformation->mainboard.DVD_ROM.StartAddress, SystemInformation->mainboard.DVD_ROM.size);
-
-#ifndef DSNET_HOST_SUPPORT
-        sprintf(filename, "%s/%s_DVD_ROM.bin", path, SystemInformation->mainboard.ModelName);
-#else
-        sprintf(filename, "%s%s_DVD_ROM.bin", path, SystemInformation->mainboard.ModelName);
-#endif
-        if ((result = DumpRom(filename, SystemInformation, DumpingStatus, DUMP_REGION_DVD_ROM)) == 0)
-        {
-            DEBUG_PRINTF("done!\n");
-        }
-        else
-        {
-            DEBUG_PRINTF("failed!\n");
-        }
-    }
-
-#ifndef DSNET_HOST_SUPPORT
-    sprintf(filename, "%s/%s_NVM.bin", path, SystemInformation->mainboard.ModelName);
-#else
-    sprintf(filename, "%s%s_NVM.bin", path, SystemInformation->mainboard.ModelName);
-#endif
-    if ((result = DumpMECHACON_EEPROM(filename)) == 0)
-    {
-        DumpingStatus[DUMP_REGION_EEPROM].progress = 1.00f;
-        DumpingStatus[DUMP_REGION_EEPROM].status   = 1;
-    }
-    else
-        DumpingStatus[DUMP_REGION_EEPROM].status = result;
-
-    RedrawDumpingScreen(SystemInformation, DumpingStatus);
 
 #ifndef DSNET_HOST_SUPPORT
     sprintf(filename, "%s/%s_specs.txt", path, SystemInformation->mainboard.ModelName);
@@ -1729,6 +1917,59 @@ static int DumpSystemROM(const char *path, const struct SystemInformation *Syste
         sprintf(filename, "%s%s_database.bin", path, SystemInformation->mainboard.ModelName);
 #endif
         WriteNewMainboardDBRecord(filename, &SystemInformation->mainboard);
+    }
+
+#ifndef DSNET_HOST_SUPPORT
+    sprintf(filename, "%s/%s_NVM.bin", path, SystemInformation->mainboard.ModelName);
+#else
+    sprintf(filename, "%s%s_NVM.bin", path, SystemInformation->mainboard.ModelName);
+#endif
+    if ((result = DumpMECHACON_EEPROM(filename)) == 0)
+    {
+        DumpingStatus[DUMP_REGION_EEPROM].progress = 1.00f;
+        DumpingStatus[DUMP_REGION_EEPROM].status   = 1;
+    }
+    else
+        DumpingStatus[DUMP_REGION_EEPROM].status = result;
+
+    RedrawDumpingScreen(SystemInformation, DumpingStatus);
+
+    if (SystemInformation->mainboard.BOOT_ROM.IsExists && DumpLargeRoms)
+    {
+        DEBUG_PRINTF("Dumping Boot ROM at %p, %u bytes...", SystemInformation->mainboard.BOOT_ROM.StartAddress, SystemInformation->mainboard.BOOT_ROM.size);
+
+#ifndef DSNET_HOST_SUPPORT
+        sprintf(filename, "%s/%s_BOOT_ROM.bin", path, SystemInformation->mainboard.ModelName);
+#else
+        sprintf(filename, "%s%s_BOOT_ROM.bin", path, SystemInformation->mainboard.ModelName);
+#endif
+        if ((result = DumpRom(filename, SystemInformation, DumpingStatus, DUMP_REGION_BOOT_ROM)) == 0)
+        {
+            DEBUG_PRINTF("done!\n");
+        }
+        else
+        {
+            DEBUG_PRINTF("failed!\n");
+        }
+    }
+
+    if (SystemInformation->mainboard.DVD_ROM.IsExists && DumpLargeRoms)
+    {
+        DEBUG_PRINTF("Dumping DVD ROM at %p, %u bytes...", SystemInformation->mainboard.DVD_ROM.StartAddress, SystemInformation->mainboard.DVD_ROM.size);
+
+#ifndef DSNET_HOST_SUPPORT
+        sprintf(filename, "%s/%s_DVD_ROM.bin", path, SystemInformation->mainboard.ModelName);
+#else
+        sprintf(filename, "%s%s_DVD_ROM.bin", path, SystemInformation->mainboard.ModelName);
+#endif
+        if ((result = DumpRom(filename, SystemInformation, DumpingStatus, DUMP_REGION_DVD_ROM)) == 0)
+        {
+            DEBUG_PRINTF("done!\n");
+        }
+        else
+        {
+            DEBUG_PRINTF("failed!\n");
+        }
     }
 
     free(filename);

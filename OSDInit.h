@@ -148,6 +148,9 @@ const char *OSDGetSystemDataFolder(void);
 const char *OSDGetDVDPLExecFolder(void);
 const char *OSDGetHistoryDataFolder(void);
 
+//Returns a human-readable version number for the DVD Player.
+const char *OSDGetVersion(void);
+
 //For compatibility with the homebrew SDK
 #define sceMcInit        mcInit
 #define sceMcGetInfo     mcGetInfo

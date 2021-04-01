@@ -102,10 +102,10 @@ static void AddMainboardModel(void)
     NewEntry.MRenewalDate[2] = GetWord(0);
 
     printf("MECHACON renewal hour: ");
-    NewEntry.MRenewalDate[4] = GetWord(0);
+    NewEntry.MRenewalDate[3] = GetWord(0);
 
     printf("MECHACON renewal minute: ");
-    NewEntry.MRenewalDate[5] = GetWord(0);
+    NewEntry.MRenewalDate[4] = GetWord(0);
 
     printf("BoardInf: ");
     NewEntry.BoardInf = GetWord(0);
@@ -158,7 +158,7 @@ static void AddMainboardModel(void)
     {
         result = getchar();
     } while (result != 'n' && result != 'y');
-    getchar();
+    // getchar();
 
     if (result == 'y')
     {
@@ -177,7 +177,7 @@ static void AddMainboardModel(void)
     {
         result = getchar();
     } while (result != 'n' && result != 'y');
-    getchar();
+    // getchar();
 
     if (result == 'y')
     {
@@ -259,7 +259,7 @@ static void AddMainboardModel(void)
     {
         result = getchar();
     } while (result != 'n' && result != 'y');
-    getchar();
+    // getchar();
 
     if (result == 'y')
     {
@@ -277,7 +277,7 @@ static void AddMainboardModel(void)
     {
         result = getchar();
     } while (result != 'n' && result != 'y');
-    getchar();
+    // getchar();
 
     if (result == 'y')
         NewEntry.status |= PS2IDB_STAT_ERR_MODDED;
@@ -307,7 +307,7 @@ static void DisplayMainboardList(void)
         for (i = 0; i < NumEntriesInDatabase; i++)
         {
             entry = PS2IDBMS_GetMainboardDatabaseRecord(i);
-            printf("\t%u. %s (%s)\n", i + 1, entry->ModelName, entry->MainboardName);
+            printf("\t%03u. %s | %s\n", i + 1, entry->ModelName, entry->MainboardName);
         }
 
         printf("Model? (enter 0 to quit) ");
@@ -343,68 +343,81 @@ static void GenerateMainboardCSV(void)
     {
         printf("File to save to (leave blank to cancel): ");
         fgets(FileName, sizeof(FileName), stdin);
+        FileName[strlen(FileName) - 1] = '\0';
         if (strlen(FileName) > 0)
         {
             if ((file = fopen(FileName, "w")) != NULL)
             {
                 printf("Generating CSV...");
 
-                fprintf(file, "Model,Model ID,Console Model ID,EMCS ID,ROMVER,ROMGEN,Region,MECHACON,Type,ADD0x010,M Renewal Date,Mainboard,Chassis,Machine type,BoardInf"
-                              ",SPU2,Boot ROM,Boot ROM CRC16,DVD ROM,DVD ROM CRC16,USB,GS ID, GS revision,SSBUS I/F,AIF controller,SPEED revision,SPEED capabilities,"
-                              "PHY OUI,PHY model,PHY revision,i.Link ports,i.Link maximum speed,i.Link compliance level,"
-                              "i.Link vendor ID,i.Link product ID,EE implementation,EE revision,FPU implementation,"
-                              "FPU revision,MPU Board ID,EE ICache size,EE DCache size,EE RAM size,IOP revision,IOP RAM size,Contributor,Remarks\n");
+                fprintf(file, "Model;Model ID;Console Model ID;EMCS ID;ROMVER;ROMGEN;Type;Region;MECHACON;M Renewal Date;Mainboard;ADD0x010;Chassis;Machine type;BoardInf"
+                              ";SPU2;Boot ROM;Boot ROM CRC16;DVD ROM;DVD ROM CRC16;USB;GS ID; GS revision;SSBUS I/F;AIF controller;SPEED revision;SPEED capabilities;"
+                              "PHY OUI;PHY model;PHY revision;i.Link ports;i.Link maximum speed;i.Link compliance level;"
+                              "i.Link vendor ID;i.Link product ID;EE implementation;EE revision;FPU implementation;"
+                              "FPU revision;MPU Board ID;EE ICache size;EE DCache size;EE RAM size;IOP revision;IOP RAM size;Contributor;Remarks\n");
                 for (i = 0; i < NumEntriesInDatabase; i++)
                 {
                     entry      = PS2IDBMS_GetMainboardDatabaseRecord(i);
                     modelID    = entry->ModelID[0] | entry->ModelID[1] << 8 | entry->ModelID[2] << 16;
                     conModelID = entry->ConModelID[0] | entry->ConModelID[1] << 8;
-                    fprintf(file, "\"%s\",\"0x%06x (%s)\",0x%04x,\"0x%02x (%s)\",\"%s\""
-                                  ",%04x-%04x,\"0x%02x (%s)\""
-                                  ",\"v%u.%u (%s)\""
-                                  ",\"0x%02x (%s)\",\"0x%04x (%s)\",",
+                    fprintf(file, "\"%s\";\"0x%06x | %s\";0x%04x;\"0x%02x | %s\";\"%s\""
+                                  ";%04x-%04x;\"0x%02x | %s\";\"0x%02x | %s\""
+                                  ";\"v%u.%02u | %s\""
+                                  ";",
                             entry->ModelName, modelID, GetModelIDDesc(modelID), conModelID, entry->EMCSID, GetEMCSIDDesc(entry->EMCSID), entry->romver,
-                            entry->ROMGEN_MonthDate, entry->ROMGEN_Year, entry->MECHACONVersion[0], GetRegionDesc(entry->MECHACONVersion[0]),
-                            entry->MECHACONVersion[1], entry->MECHACONVersion[2], GetMECHACONChipDesc((unsigned int)(entry->MECHACONVersion[1]) << 8 | entry->MECHACONVersion[2]),
-                            entry->MECHACONVersion[3], GetSystemTypeDesc(entry->MECHACONVersion[3]), entry->ADD010, GetADD010Desc(entry->ADD010));
+                            entry->ROMGEN_MonthDate, entry->ROMGEN_Year,
+                            entry->MECHACONVersion[3], GetSystemTypeDesc(entry->MECHACONVersion[3]), entry->MECHACONVersion[0], GetRegionDesc(entry->MECHACONVersion[0]),
+                            entry->MECHACONVersion[1], entry->MECHACONVersion[2], GetMECHACONChipDesc((unsigned int)(entry->MECHACONVersion[1]) << 8 | entry->MECHACONVersion[2]));
 
                     if (entry->MECHACONVersion[1] < 5 || (entry->status & PS2IDB_STAT_ERR_MRENEWDATE))
                         fprintf(file, "\"----/--/-- --:--\"");
                     else
                         fprintf(file, "\"20%02x/%02x/%02x %02x:%02x\"", entry->MRenewalDate[0], entry->MRenewalDate[1], entry->MRenewalDate[2], entry->MRenewalDate[3], entry->MRenewalDate[4]);
 
-                    fprintf(file, ",\"%s\",\"%s\""
-                                  ",0x%08x,\"0x%02x (%s)\",\"0x%02x (%s)\""
-                                  ",0x%08x (%uMbit), 0x%04x,",
-                            entry->MainboardName, GetChassisDesc(entry),
+                    fprintf(file, ";\"0x%04x | %s\";\"%s\";\"%s\""
+                                  ";0x%08x;\"0x%02x | %s\";\"0x%02x | %s\""
+                                  ";0x%08x | %uMbit; 0x%04x;",
+                            entry->ADD010, GetADD010Desc(entry->ADD010), entry->MainboardName, GetChassisDesc(entry),
                             entry->MachineType, entry->BoardInf, GetMRPDesc(entry->BoardInf), entry->spu2.revision, GetSPU2ChipDesc(entry->spu2.revision),
                             entry->BOOT_ROM.StartAddress, entry->BOOT_ROM.size * 8 / 1024 / 1024, entry->BOOT_ROM.crc16);
 
                     if (entry->DVD_ROM.IsExists)
                     {
-                        fprintf(file, "0x%08x (%uMbit), 0x%04x,", entry->DVD_ROM.StartAddress, entry->DVD_ROM.size * 8 / 1024 / 1024, entry->DVD_ROM.crc16);
+                        fprintf(file, "0x%08x | %uMbit; 0x%04x;", entry->DVD_ROM.StartAddress, entry->DVD_ROM.size * 8 / 1024 / 1024, entry->DVD_ROM.crc16);
                     }
                     else
-                        fprintf(file, "-,-,");
+                        fprintf(file, "-;-;");
 
-                    fprintf(file, "%u.%u,0x%02x,\"%u.%u (%s)\",\"0x%02x (%s)\",", (entry->usb.HcRevision & 0xF0) >> 4, entry->usb.HcRevision & 0xF, entry->gs.id, (entry->gs.revision & 0xF0) >> 4, entry->gs.revision & 0xF, GetGSChipDesc((unsigned short int)(entry->gs.id) << 8 | entry->gs.revision), entry->ssbus.revision, GetSSBUSIFDesc(entry->ssbus.revision));
+                    fprintf(file, "%u.%u;0x%02x;\"%u.%02u | %s\";\"0x%02x | %s\";", 
+                        (entry->usb.HcRevision & 0xF0) >> 4, entry->usb.HcRevision & 0xF, entry->gs.id, 
+                        (entry->gs.revision & 0xF0) >> 4, entry->gs.revision & 0xF, GetGSChipDesc((unsigned short int)(entry->gs.id) << 8 | entry->gs.revision), 
+                        entry->ssbus.revision, GetSSBUSIFDesc(entry->ssbus.revision));
                     if (entry->ssbus.status & PS2DB_SSBUS_HAS_AIF)
                     {
-                        fprintf(file, "%u,", entry->ssbus.AIFRevision);
+                        fprintf(file, "%u;", entry->ssbus.AIFRevision);
                     }
                     else
                     {
-                        fprintf(file, "-,");
+                        fprintf(file, "-;");
                     }
 
                     if (entry->ssbus.status & PS2DB_SSBUS_HAS_SPEED)
                     {
-                        fprintf(file, "\"0x%04x (%s)\",\"%04x.%04x (%s)\",\"0x%06x (%s)\",\"0x%02x (%s)\",0x%02x,", entry->ssbus.SPEED.rev1, GetSPEEDDesc(entry->ssbus.SPEED.rev1), entry->ssbus.SPEED.rev3, entry->ssbus.SPEED.rev8, GetSPEEDCapsDesc(entry->ssbus.SPEED.rev3), entry->ssbus.SPEED.SMAP_PHY_OUI, GetPHYVendDesc(entry->ssbus.SPEED.SMAP_PHY_OUI), entry->ssbus.SPEED.SMAP_PHY_VMDL, GetPHYModelDesc(entry->ssbus.SPEED.SMAP_PHY_OUI, entry->ssbus.SPEED.SMAP_PHY_VMDL), entry->ssbus.SPEED.SMAP_PHY_REV);
+                        fprintf(file, "\"0x%04x | %s\";\"%04x.%04x | %s\";\"0x%06x | %s\";\"0x%02x | %s\";0x%02x;", 
+                            entry->ssbus.SPEED.rev1, GetSPEEDDesc(entry->ssbus.SPEED.rev1), entry->ssbus.SPEED.rev3, entry->ssbus.SPEED.rev8, GetSPEEDCapsDesc(entry->ssbus.SPEED.rev3),
+                            entry->ssbus.SPEED.SMAP_PHY_OUI, GetPHYVendDesc(entry->ssbus.SPEED.SMAP_PHY_OUI), 
+                            entry->ssbus.SPEED.SMAP_PHY_VMDL, GetPHYModelDesc(entry->ssbus.SPEED.SMAP_PHY_OUI, entry->ssbus.SPEED.SMAP_PHY_VMDL), entry->ssbus.SPEED.SMAP_PHY_REV);
                     }
                     else
-                        fprintf(file, "-,-,-,-,-,");
+                        fprintf(file, "-;-;-;-;-;");
 
-                    fprintf(file, "%u,\"%u (%s)\",\"0x%02x (%s)\",\"0x%08x (%s)\",0x%08x,0x%02x,\"%u.%u (%s)\",0x%02x,%u.%u,0x%04x,%uKB,%uKB,\"%u bytes\",\"%u.%u (%s)\",\"%u bytes\",\"%s\",", entry->iLink.NumPorts, entry->iLink.MaxSpeed, GetiLinkSpeedDesc(entry->iLink.MaxSpeed), entry->iLink.ComplianceLevel, GetiLinkComplianceLvlDesc(entry->iLink.ComplianceLevel), entry->iLink.VendorID, GetiLinkVendorDesc(entry->iLink.VendorID), entry->iLink.ProductID, entry->ee.implementation, (entry->ee.revision & 0xF0) >> 4, entry->ee.revision & 0xF, GetEEChipDesc((unsigned short int)(entry->ee.implementation) << 8 | entry->ee.revision), entry->ee.FPUImplementation, (entry->ee.FPURevision & 0xF0) >> 4, entry->ee.FPURevision & 0xF, entry->MPUBoardID, CalculateCPUCacheSize(entry->ee.ICacheSize) / 1024, CalculateCPUCacheSize(entry->ee.DCacheSize) / 1024, entry->ee.RAMSize, (entry->iop.revision & 0xF0) >> 4, entry->iop.revision & 0xF, GetIOPChipDesc(entry->iop.revision), entry->iop.RAMSize, entry->ContributorName);
+                    fprintf(file, "%u;\"%u | %s\";\"0x%02x | %s\";\"0x%08x | %s\";0x%08x;0x%02x;\"%u.%02u | %s\";0x%02x;%u.%u;0x%04x;%uKB;%uKB;\"%u bytes\";\"%u.%02u | %s\";\"%u bytes\";\"%s\";", 
+                        entry->iLink.NumPorts, entry->iLink.MaxSpeed, GetiLinkSpeedDesc(entry->iLink.MaxSpeed), entry->iLink.ComplianceLevel, GetiLinkComplianceLvlDesc(entry->iLink.ComplianceLevel), 
+                        entry->iLink.VendorID, GetiLinkVendorDesc(entry->iLink.VendorID), entry->iLink.ProductID, 
+                        entry->ee.implementation, (entry->ee.revision & 0xF0) >> 4, entry->ee.revision & 0xF, GetEEChipDesc((unsigned short int)(entry->ee.implementation) << 8 | entry->ee.revision), 
+                        entry->ee.FPUImplementation, (entry->ee.FPURevision & 0xF0) >> 4, entry->ee.FPURevision & 0xF, entry->MPUBoardID, 
+                        CalculateCPUCacheSize(entry->ee.ICacheSize) / 1024, CalculateCPUCacheSize(entry->ee.DCacheSize) / 1024, entry->ee.RAMSize, 
+                        (entry->iop.revision & 0xF0) >> 4, entry->iop.revision & 0xF, GetIOPChipDesc(entry->iop.revision), entry->iop.RAMSize, entry->ContributorName);
 
                     if (entry->status)
                     {
@@ -504,7 +517,7 @@ static void UpdateModelEntry(void)
                     {
                         result = getchar();
                     } while (result != 'n' && result != 'y');
-                    getchar();
+                    // getchar();
 
                     if (result == 'y')
                         NewEntry.status |= PS2IDB_STAT_ERR_MODDED;
@@ -588,11 +601,11 @@ static void AddComponentEntry(int id)
 
     memset(&NewEntry, 0, sizeof(NewEntry));
 
-    printf("Enter component model (leave blank to cancel): ");
+    printf("Enter component model name (text field). Leave blank to cancel: ");
     GetString(NewEntry.name, sizeof(NewEntry.name));
     if (strlen(NewEntry.name) > 0)
     {
-        printf("Enter component revision: ");
+        printf("Enter component revision (hex or dec number, example 0x00 or 0): ");
         NewEntry.revision = GetWord(0);
 
         if (PS2IDBMS_AddModel(id, &NewEntry) == EEXIST)
@@ -605,7 +618,7 @@ static void AddComponentEntry(int id)
 static void ListComponentModels(int id)
 {
     unsigned int i, NumEntriesInDatabase;
-    const struct PS2IDBComponentEntry *entry;
+    const struct PS2IDBComponentEntry* entry;
 
     if ((NumEntriesInDatabase = PS2IDBMS_GetNumDatabaseRecords(id)) > 0)
     {
@@ -614,12 +627,48 @@ static void ListComponentModels(int id)
         for (i = 0; i < NumEntriesInDatabase; i++)
         {
             entry = PS2IDBMS_GetDatabaseRecord(id, i);
-            printf("\t%u. 0x%04x (%s)\n", i + 1, entry->revision, entry->name);
+            printf("\t%03u. 0x%04x | %s\n", i + 1, entry->revision, entry->name);
         }
     }
     else
     {
         printf("No entries in database.\n");
+    }
+}
+
+static void SortComponentModels(int id)
+{
+    unsigned int i, j;
+    const struct PS2IDBComponentEntry* entry_j;
+    const struct PS2IDBComponentEntry* entry_j1;
+    
+    unsigned int NumEntriesInDatabase = PS2IDBMS_GetNumDatabaseRecords(id);
+
+    if (NumEntriesInDatabase > 1)
+    {
+        printf("Model list (%u records):\n", NumEntriesInDatabase);
+
+        for (i = 0; i < NumEntriesInDatabase; i++)
+        {
+            for (j = 0; j < NumEntriesInDatabase - 1; j++)
+            {
+                entry_j = PS2IDBMS_GetDatabaseRecord(id, j);
+                entry_j1 = PS2IDBMS_GetDatabaseRecord(id, j + 1);
+                if (entry_j->revision > entry_j1->revision)
+                {
+                    struct PS2IDBComponentEntry EntryJ, EntryJ1;
+                    memcpy(&EntryJ, entry_j, sizeof(struct PS2IDBComponentEntry));
+                    memcpy(&EntryJ1, entry_j1, sizeof(struct PS2IDBComponentEntry));
+                    PS2IDBMS_UpdateModel(id, j, &EntryJ1);
+                    PS2IDBMS_UpdateModel(id, j + 1, &EntryJ);
+                }
+            }
+        }
+        printf("Sort complete.\n");
+    }
+    else
+    {
+        printf("Sort complete.\n");
     }
 }
 
@@ -678,7 +727,7 @@ static void AddComponent(void)
 
     printf("Select component type to add:\n");
     for (i = 0; i < PS2IDB_COMPONENT_COUNT; i++)
-        printf("\t%d. %s\n", i + 1, ComponentTypes[i]);
+        printf("\t%02d. %s\n", i + 1, ComponentTypes[i]);
     printf("Enter choice (Enter 0 to quit): ");
     choice = GetWord(0) - 1;
 
@@ -709,11 +758,34 @@ static void ListComponent(void)
     {
         switch (choice)
         {
-            case PS2IDB_COMPONENT_MAINBOARD:
-                DisplayMainboardList();
-                break;
-            default:
-                ListComponentModels(choice);
+        case PS2IDB_COMPONENT_MAINBOARD:
+            DisplayMainboardList();
+            break;
+        default:
+            ListComponentModels(choice);
+        }
+    }
+}
+
+static void SortComponent(void)
+{
+    int i, choice;
+
+    printf("Select component type to list:\n");
+    for (i = 0; i < PS2IDB_COMPONENT_COUNT; i++)
+        printf("\t%d. %s\n", i + 1, ComponentTypes[i]);
+    printf("Enter choice (Enter 0 to quit): ");
+    choice = GetWord(0) - 1;
+
+    if (choice >= 0 && choice < PS2IDB_COMPONENT_COUNT)
+    {
+        switch (choice)
+        {
+        case PS2IDB_COMPONENT_MAINBOARD:
+            printf("Mainboard list cannot be sorted.\n");
+            break;
+        default:
+            SortComponentModels(choice);
         }
     }
 }
@@ -878,7 +950,7 @@ static void ImportMainboardModelPrompt(void)
                 {
                     result = getchar();
                 } while (result != 'n' && result != 'y');
-                getchar();
+                // getchar();
 
                 isModded = (result == 'y');
 
@@ -902,8 +974,8 @@ int main(int argc, char *argv[])
     int result, choice, i, j;
     short int isModded;
 
-    printf("PlayStation 2 Ident model DBMS v1.06\n"
-           "-------------------------------------\n\n");
+    printf("PlayStation 2 Ident model DBMS v1.06.1\n"
+           "--------------------------------------\n\n");
 
     for (i = 2; i < argc; i++)
     {
@@ -967,16 +1039,17 @@ int main(int argc, char *argv[])
                        "\t1. Import mainboard model\n"
                        "\t2. Add component\n"
                        "\t3. View component list\n"
-                       "\t4. Update component/mainboard entry\n"
-                       "\t5. Delete component\n"
-                       "\t6. Generate mainboard model spreadsheet\n"
-                       "\t7. Save and quit\n"
-                       "\t8. Quit without saving\n"
+                       "\t4. Sort component list\n"
+                       "\t5. Update component/mainboard entry\n"
+                       "\t6. Delete component\n"
+                       "\t7. Generate mainboard model spreadsheet\n"
+                       "\t8. Save and quit\n"
+                       "\t9. Quit without saving\n"
                        "Your choice: ");
 
                 if (scanf("%d", &choice) != 1)
                     choice = -1;
-            } while (choice < 1 || choice > 8);
+            } while (choice < 1 || choice > 9);
             ClearInput();
 
             switch (choice)
@@ -991,15 +1064,18 @@ int main(int argc, char *argv[])
                     ListComponent();
                     break;
                 case 4:
-                    UpdateComponent();
+                    SortComponent();
                     break;
                 case 5:
-                    DeleteComponent();
+                    UpdateComponent();
                     break;
                 case 6:
-                    GenerateMainboardCSV();
+                    DeleteComponent();
                     break;
                 case 7:
+                    GenerateMainboardCSV();
+                    break;
+                case 8:
                     printf("Saving...");
                     if ((result = PS2IDBMS_SaveDatabase(argv[1])) == 0)
                     {

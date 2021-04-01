@@ -14,6 +14,7 @@ struct SystemInformation
     unsigned char SMAP_MAC_address[6];
     char chassis[14];
     char DVDPlayerVer[32];
+    char OSDVer[16];
     char PS1DRVVer[32];
     u8 DSPVersion[2];
     unsigned int EE_F520;
@@ -51,6 +52,7 @@ const char *GetChassisDesc(const struct PS2IDBMainboardEntry *SystemInformation)
 const char *GetModelIDDesc(unsigned int id);
 const char *GetEMCSIDDesc(unsigned char id);
 const char *GetADD010Desc(unsigned short int id);
+const char *GetDSPDesc(unsigned char revision);
 
 int GetADD010(u16 address, u16 *word);
 

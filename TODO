@@ -1,19 +1,11 @@
 - research new EE value from @wisi (data collection)
-- add summary page (with contributor levels - text log, sticker, dissasembly, ROM dumps)
 - add ROM database (BOOT and DVD), mostly for redump database
-- add ability to store BOOTrom EXTINFO field into text log file
-- store BOOT not as crc but as datecode from EXTINFO field
-- store DVD not as crc but as DVD player version
-- crc values can be used for detecting modchips
-- store PS1Drv version into database
+- add ability to store ROMDIR EXTINFO (for BOOt and DVD roms) field into text log file
+- recognize roms by extinof, not by CRC
+- CRC values can be used for detecting modchips
 - add ability to dump keys (all serials + HDD key) into separate file
 - fix DVD EROM detection on slim consoles
-- add DSP chip detection
 - add additional field for network adapters for FAT models (including non-official)
 - split network adapter, so al possible official adapters will be shown
 - or at least add gamestar detection
 - add first 3 bytes of MAC address into database
-- DTL-H3010x will report error bit when SCMD 03:00 is called. Add a switch for ignroing it
-- DTL SCMD 03:00 will add one byte (taken from NVraM), but mecha firmware is the same. Ignore the difference.
-- `MECACON_V00020800_` official version numbering
-- M Renewal date - Mechacon timestamp, unique for firmware. Should correlate with mechacon version.

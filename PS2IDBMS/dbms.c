@@ -16,6 +16,15 @@ struct PS2IDBPeripheral
 
 static struct PS2IDBPeripheral peripherals[PS2IDB_COMPONENT_COUNT];
 
+static void GetString(char* buffer, int len)
+{
+    char* ptr;
+
+    fgets(buffer, len, stdin);
+    while ((ptr = strpbrk(buffer, "\n\r")) != NULL)
+        *ptr = '\0';
+}
+
 static int PS2IDBMS_LoadMoboDatabase(FILE *DatabaseFile, unsigned short int NumEntries)
 {
     int result, i;
@@ -48,15 +57,6 @@ static int PS2IDBMS_LoadMoboDatabase(FILE *DatabaseFile, unsigned short int NumE
     return result;
 }
 
-static void GetString(char *buffer, int len)
-{
-    char *ptr;
-
-    fgets(buffer, len, stdin);
-    while ((ptr = strpbrk(buffer, "\n\r")) != NULL)
-        *ptr = '\0';
-}
-
 static int PS2IDBMS_LoadMoboDatabase0112(FILE *DatabaseFile, unsigned short int NumEntries)
 {
     int result, i;
@@ -66,7 +66,9 @@ static int PS2IDBMS_LoadMoboDatabase0112(FILE *DatabaseFile, unsigned short int 
 
     MoboDatabase    = NULL;
     NewMoboDatabase = NULL;
-    if ((MoboDatabase = malloc(NumEntries * sizeof(struct PS2IDBMainboardEntry112))) != NULL, (NewMoboDatabase = malloc(NumEntries * sizeof(struct PS2IDBMainboardEntry))) != NULL)
+    MoboDatabase = malloc(NumEntries * sizeof(struct PS2IDBMainboardEntry112));
+    NewMoboDatabase = malloc(NumEntries * sizeof(struct PS2IDBMainboardEntry));
+    if (MoboDatabase != NULL && NewMoboDatabase != NULL)
     {
         if (fread(MoboDatabase, sizeof(struct PS2IDBMainboardEntry112), NumEntries, DatabaseFile) == NumEntries)
         {
@@ -101,8 +103,6 @@ static int PS2IDBMS_LoadMoboDatabase0112(FILE *DatabaseFile, unsigned short int 
     else
         result = ENOMEM;
 
-    if (MoboDatabase != NULL)
-        free(MoboDatabase);
     if (result != 0 && NewMoboDatabase != NULL)
         free(NewMoboDatabase);
 
@@ -136,7 +136,7 @@ static int PS2IDBMS_LoadGenericPeripheralDatabase(unsigned short int id, FILE *D
 
 static int PS2IDBMS_LoadDatabase0112(struct PS2IDBHeader *header, FILE *DatabaseFile)
 {
-    int result, i;
+    int result = 0, i;
     struct PS2IDBComponentTable component;
     unsigned int *OffsetTable;
 
@@ -196,7 +196,7 @@ static int PS2IDBMS_LoadDatabase0112(struct PS2IDBHeader *header, FILE *Database
 
 static int PS2IDBMS_LoadDatabaseNormal(struct PS2IDBHeader *header, FILE *DatabaseFile)
 {
-    int result, i;
+    int result = 0, i;
     struct PS2IDBComponentTable component;
     unsigned int *OffsetTable;
 
@@ -527,6 +527,7 @@ int PS2IDBMS_DeleteRecord(int id, unsigned int index)
     int result;
     unsigned int NumModels;
     struct PS2IDBComponentEntry *entry;
+    void* tmp;
 
     NumModels = peripherals[id].NumModels;
     if (index < NumModels)
@@ -536,8 +537,10 @@ int PS2IDBMS_DeleteRecord(int id, unsigned int index)
             entry = &((struct PS2IDBComponentEntry *)peripherals[id].models)[index];
 
             memmove(entry, entry + 1, (NumModels - (index + 1)) * sizeof(struct PS2IDBComponentEntry));
-            if ((peripherals[id].models = realloc(peripherals[id].models, (NumModels - 1) * sizeof(struct PS2IDBComponentEntry))) != NULL)
+            tmp = realloc(peripherals[id].models, (NumModels - 1) * sizeof(struct PS2IDBComponentEntry));
+            if (tmp != NULL)
             {
+                peripherals[id].models = tmp;
                 peripherals[id].NumModels--;
                 result = 0;
             }
@@ -568,6 +571,7 @@ int PS2IDBMS_DeleteMainboardRecord(unsigned int index)
     int result;
     unsigned int NumModels;
     struct PS2IDBMainboardEntry *entry;
+    void* tmp;
 
     NumModels = peripherals[PS2IDB_COMPONENT_MAINBOARD].NumModels;
     if (index < NumModels)
@@ -577,8 +581,10 @@ int PS2IDBMS_DeleteMainboardRecord(unsigned int index)
             entry = &((struct PS2IDBMainboardEntry *)peripherals[PS2IDB_COMPONENT_MAINBOARD].models)[index];
 
             memmove(entry, entry + 1, (NumModels - (index + 1)) * sizeof(struct PS2IDBMainboardEntry));
-            if ((peripherals[PS2IDB_COMPONENT_MAINBOARD].models = realloc(peripherals[PS2IDB_COMPONENT_MAINBOARD].models, (NumModels - 1) * sizeof(struct PS2IDBMainboardEntry))) != NULL)
+            tmp = realloc(peripherals[PS2IDB_COMPONENT_MAINBOARD].models, (NumModels - 1) * sizeof(struct PS2IDBMainboardEntry));
+            if (tmp != NULL)
             {
+                peripherals[PS2IDB_COMPONENT_MAINBOARD].models = tmp;
                 peripherals[PS2IDB_COMPONENT_MAINBOARD].NumModels--;
                 result = 0;
             }

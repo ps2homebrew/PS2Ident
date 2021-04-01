@@ -1,5 +1,16 @@
 2019/08/22
 	AKuHAK:
+	* changed versioning
+	* Fixed bug with Sticker messages
+	* Reformatted log file
+	* Attempt to fix gui bug
+	* Fixed mechacon detection on DTL-H3010x
+	* Added DSP chip description
+	* Fixed DVD rom dumping
+	* Added new EE chip values (for research)
+
+2019/08/22
+	AKuHAK:
 	* added SCPH-50003(a) ModelID and Mainboard data from H3X1C (GH-026 I-Chassis)
 
 2019/08/07

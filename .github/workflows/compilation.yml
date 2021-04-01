@@ -35,7 +35,54 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}
-        path: PS2Ident.elf
+        path: |
+          PS2Ident.elf
+          PS2Ident.db
+          README.md
+          changelog.txt
+          LICENSE_OFL.txt
+          *.ttf
+
+    - name: Compile PCSX2 version
+      continue-on-error: true
+      run: |
+        make clean
+        make DEBUG=1 DSNET_HOST_SUPPORT=1 DISABLE_ILINK_DUMPING=1
+
+    - name: Upload PCSX2 artifacts
+      if: ${{ success() }}
+      continue-on-error: true
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PCSX2
+        path: |
+          PS2Ident.elf
+          PS2Ident.db
+          README.md
+          changelog.txt
+          LICENSE_OFL.txt
+          *.ttf
+
+    - name: Compile PS2TOOL version
+      continue-on-error: true
+      run: |
+        make clean
+        make DEBUG=1 DSNET_HOST_SUPPORT=1
+
+    - name: Upload PS2TOOL artifacts
+      if: ${{ success() }}
+      continue-on-error: true
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PS2TOOL
+        path: |
+          PS2Ident-np.elf
+          PS2Ident.db
+          README.md
+          changelog.txt
+          LICENSE_OFL.txt
+          *.ttf
+
     # 'path' will create artifact with all *.elf in working directory
     # you can change this
 
@@ -53,7 +100,7 @@ jobs:
       - name: Build
         run: |
           cd PS2IDBMS
-          msbuild /p:PlatformToolset=v142 /p:Configuration=Release
+          msbuild /p:Configuration=Release
 
       - uses: actions/upload-artifact@v2
         with:
@@ -82,7 +129,7 @@ jobs:
           path: ROMIMG/Release/ROMIMG.exe
 
   release:
-    needs: [build, build-ps2idbms, build-romimg]
+    needs: [build, build-ps2idbms,build-romimg]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master'
     steps:
@@ -94,10 +141,25 @@ jobs:
         echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
         echo "::set-output name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")"
 
-    - name: Download ps2ident artifact
+    - name: Download PS2Ident artifact
       uses: actions/download-artifact@v2
       with:
         name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}
+        path: PS2Ident
+
+    - name: Prepare PS2Ident archive
+      run: |
+        7z a ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}.7z PS2Ident/*
+
+    - name: Download PS2Ident for PS2TOOL artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PS2TOOL
+        path: PS2Ident-PS2TOOL
+
+    - name: Prepare PS2Ident for PS2TOOL archive
+      run: |
+        7z a ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PS2TOOL.7z PS2Ident-PS2TOOL/*
 
     - name: Download ps2idbms artifact
       uses: actions/download-artifact@v2
@@ -118,7 +180,8 @@ jobs:
         automatic_release_tag: "latest"
         title: "Development build"
         files: |
-          PS2Ident.elf
+          ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}.7z
+          ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PS2TOOL.7z
           PS2IDBMS.exe
           ROMIMG.exe
 
@@ -130,6 +193,7 @@ jobs:
         prerelease: false
         draft: true
         files: |
-          PS2Ident.elf
+          ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}.7z
+          ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PS2TOOL.7z
           PS2IDBMS.exe
-          ROMIMG.exe
+

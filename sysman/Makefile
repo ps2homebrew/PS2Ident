@@ -1,3 +1,15 @@
+#disable for PCSX2 support
+DISABLE_ILINK_DUMPING = 0
+DEBUG = 0
+
+ifeq ($(DEBUG),1)
+	IOP_CFLAGS += -DDEBUG
+endif
+
+ifeq ($(DISABLE_ILINK_DUMPING),1)
+	IOP_CFLAGS += -DDISABLE_ILINK_DUMPING
+endif
+
 IOP_BIN  = sysman.irx
 IOP_OBJS = main.o iLink.o dev9.o usb.o spu2.o rom.o imports.o
 
