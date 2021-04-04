@@ -76,7 +76,7 @@ jobs:
       with:
         name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PS2TOOL
         path: |
-          PS2Ident-np.elf
+          PS2Ident_np.elf
           PS2Ident.db
           README.md
           changelog.txt
