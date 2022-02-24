@@ -31,7 +31,7 @@ Regiones de las ROMs
 Chips ROM del sistema
 Interfaz DEV9
 Interfaz USB
-Interfaz i.Link
+Interfaz iLink
 Revisión
 Implementación
 ID
@@ -85,6 +85,6 @@ KB
 Mbit
 MB
 ADD0x010
-DVD Player
+Reproductor DVD
 PS1DRV
-ROM may be unclean
+Puede que la ROM no esté limpia
