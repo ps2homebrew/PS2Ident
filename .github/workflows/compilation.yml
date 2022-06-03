@@ -15,9 +15,7 @@ jobs:
       run: |
         apk add build-base git zip
 
-    - uses: actions/checkout@v2
-    - run: |
-        git fetch --prune --unshallow
+    - uses: actions/checkout@v3
 
     - name: Compile project
       run: |
@@ -32,7 +30,7 @@ jobs:
 
     - name: Upload artifacts
       if: ${{ success() }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}
         path: |
@@ -52,7 +50,7 @@ jobs:
     - name: Upload PCSX2 artifacts
       if: ${{ success() }}
       continue-on-error: true
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PCSX2
         path: |
@@ -72,7 +70,7 @@ jobs:
     - name: Upload PS2TOOL artifacts
       if: ${{ success() }}
       continue-on-error: true
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PS2TOOL
         path: |
@@ -92,17 +90,17 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup msbuild
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: microsoft/setup-msbuild@v1.1
 
       - name: Build
         run: |
           cd PS2IDBMS
           msbuild /p:Configuration=Release
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: PS2IDBMS
           path: PS2IDBMS/Release/PS2IDBMS.exe
@@ -113,17 +111,17 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup msbuild
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: microsoft/setup-msbuild@v1.1
 
       - name: Build
         run: |
           cd ROMIMG
           msbuild /p:PlatformToolset=v142 /p:Configuration=Release
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ROMIMG
           path: ROMIMG/Release/ROMIMG.exe
@@ -133,7 +131,7 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master'
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Get short SHA and repository name
       id: slug
@@ -142,7 +140,7 @@ jobs:
         echo "::set-output name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")"
 
     - name: Download PS2Ident artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}
         path: PS2Ident
@@ -152,7 +150,7 @@ jobs:
         7z a ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}.7z PS2Ident/*
 
     - name: Download PS2Ident for PS2TOOL artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PS2TOOL
         path: PS2Ident-PS2TOOL
@@ -162,12 +160,12 @@ jobs:
         7z a ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PS2TOOL.7z PS2Ident-PS2TOOL/*
 
     - name: Download ps2idbms artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: PS2IDBMS
 
     - name: Download romimg artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: ROMIMG
 
