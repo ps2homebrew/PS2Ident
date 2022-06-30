@@ -91,58 +91,58 @@ If your console is not recognized, its mainboard model will appear as "Missing".
   <summary> <b> Glossary/terms: </b> </summary>
 <p>
 
-* __EE__: The Emotion Engine, which is a MIPS R5900. The "main CPU" of the PlayStation 2.
+  * __EE__: The Emotion Engine, which is a MIPS R5900. The "main CPU" of the PlayStation 2.
 
-* __FPU__: The VU0, which also acts as the 2nd coprocessor to the EE.
+  * __FPU__: The VU0, which also acts as the 2nd coprocessor to the EE.
 
-* __IOP__: The I/O processor, which is a MIPS R3000A. The "sub-CPU" of the PlayStation 2. Although insignificant in power, it's actually in control of every part of the PS2, and provides access to the peripherals from the EE.
+  * __IOP__: The I/O processor, which is a MIPS R3000A. The "sub-CPU" of the PlayStation 2. Although insignificant in power, it's actually in control of every part of the PS2, and provides access to the peripherals from the EE.
 
-* __GS__: The Graphics Synthesizer (aka the "GPU" of the PS2).
+  * __GS__: The Graphics Synthesizer (aka the "GPU" of the PS2).
 
-* __SPU2__: The Sound Processor.
+  * __SPU2__: The Sound Processor.
 
-* __SSBUS I/F__: The SS-BUS InterFace (I/F) Controller, provides an interface to the SS-BUS from the DEV9 expansion device. Also known as a "SSBUS buffer" on consoles sporting an expansion-bay. Connected to the PS2 as DEV9.
+  * __SSBUS I/F__: The SS-BUS InterFace (I/F) Controller, provides an interface to the SS-BUS from the DEV9 expansion device. Also known as a "SSBUS buffer" on consoles sporting an expansion-bay. Connected to the PS2 as DEV9.
 
-* __MECHACON__: The drive MECHAnics CONtroller. Connected to the PS2 as DEV5.
+  * __MECHACON__: The drive MECHAnics CONtroller. Connected to the PS2 as DEV5.
 
-* __DVP__ - I'm not sure about this one, but it's a very powerful and smart processor that is connected directly to the MECHACON.
+  * __DVP__ - I'm not sure about this one, but it's a very powerful and smart processor that is connected directly to the MECHACON.
 
-* __Boot ROM__: The ROM chip containing the default IOP modules, the OSDSYS program, PlayStation driver and the self-test facility (On the SCPH-18000 and up). Connected to the PS2 as DEV2.
+  * __Boot ROM__: The ROM chip containing the default IOP modules, the OSDSYS program, PlayStation driver and the self-test facility (On the SCPH-18000 and up). Connected to the PS2 as DEV2.
 
-* __DVD ROM__: The ROM chip containing the DVD player, and the Chinese font on Chinese PlayStation 2 consoles. Newer consoles may have a single chip instead of a separate boot and DVD ROM chips. The SCPH-10000 and SCPH-15000, and all TEST, TOOL and PSX (DVR unit) units do not have a DVD ROM chip installed. Connected to the PS2 as DEV1.
+  * __DVD ROM__: The ROM chip containing the DVD player, and the Chinese font on Chinese PlayStation 2 consoles. Newer consoles may have a single chip instead of a separate boot and DVD ROM chips. The SCPH-10000 and SCPH-15000, and all TEST, TOOL and PSX (DVR unit) units do not have a DVD ROM chip installed. Connected to the PS2 as DEV1.
 
-* __NVRAM/EEPROM__: The Non-Volatile Memory storage that the MECHACON/DVP has, for storing settings (system, RTC and CD/DVD drive).
+  * __NVRAM/EEPROM__: The Non-Volatile Memory storage that the MECHACON/DVP has, for storing settings (system, RTC and CD/DVD drive).
 
-* __SPEED__: The expansion device that gets connected to the DEV9 expansion interface. May provide Ethernet support, a UART (for a dial-up modem), a DVRP, flash storage (For storing boot files), and an ATA interface.
+  * __SPEED__: The expansion device that gets connected to the DEV9 expansion interface. May provide Ethernet support, a UART (for a dial-up modem), a DVRP, flash storage (For storing boot files), and an ATA interface.
 
-* __SMAP__: The PlayStation 2 Ethernet interface. Connected to the SPEED device.
+  * __SMAP__: The PlayStation 2 Ethernet interface. Connected to the SPEED device.
 
-* Ethernet PHY: The PHYceiver device that is connected to the SMAP interface. The earliest models included a National Semiconductor DP83846A that has auto-negotiation issues with Gigabit Ethernet. Later models had a ST Microelectronics, while late slim PS2s come with a Broadcom.
+  * Ethernet PHY: The PHYceiver device that is connected to the SMAP interface. The earliest models included a National Semiconductor DP83846A that has auto-negotiation issues with Gigabit Ethernet. Later models had a ST Microelectronics, while late slim PS2s come with a Broadcom.
 
-* __DVRP__: __Only found on PSX (DVR unit) consoles__, the DVR Processor is a Fujitsu MB91302A that is connected to the SPEED device. It seems to be emulating the PS2's standard ATA interface and provides the DVR functionality. Contains its own firmware.
+  * __DVRP__: __Only found on PSX (DVR unit) consoles__, the DVR Processor is a Fujitsu MB91302A that is connected to the SPEED device. It seems to be emulating the PS2's standard ATA interface and provides the DVR functionality. Contains its own firmware.
 
-* __i.Link and USB interfaces__: The Firewire/IEEE1394/i.Link interface and USB interfaces. Their controllers are built into the IOP. Consoles that don't have an i.Link port still have the i.Link controller, but just have no physical connections to the outside world.
+  * __i.Link and USB interfaces__: The Firewire/IEEE1394/i.Link interface and USB interfaces. Their controllers are built into the IOP. Consoles that don't have an i.Link port still have the i.Link controller, but just have no physical connections to the outside world.
 
-* __AIF: On a DTL-T10000(H)__, the CXD9566R is connected through the AIF. The AIF also provides a RTC and IDE controller.
+  * __AIF: On a DTL-T10000(H)__, the CXD9566R is connected through the AIF. The AIF also provides a RTC and IDE controller.
 MPU - See MRP.
 
-* __MRP (BoardInf)__: The MRP is the interface between the PS2 and PC sides of a DTL-T10000(H). All DTL-T10000(H) units have a MPU 4.0 board as the MRP.
+  * __MRP (BoardInf)__: The MRP is the interface between the PS2 and PC sides of a DTL-T10000(H). All DTL-T10000(H) units have a MPU 4.0 board as the MRP.
 
-* __EMCS ID__: Contains the part of the IEEE1394 EUI-64 address that uniquely identifies the console, the model ID and EMCS ID.
+  * __EMCS ID__: Contains the part of the IEEE1394 EUI-64 address that uniquely identifies the console, the model ID and EMCS ID.
 
-* __i.Link ID__: Uniquely identifies the Engineering, Manufacturing and Customer Services (EMCS) system that made the console.
+  * __i.Link ID__: Uniquely identifies the Engineering, Manufacturing and Customer Services (EMCS) system that made the console.
 
-* __Model ID__: Uniquely identifies the console's model. Even more accurately than the model name.
+  * __Model ID__: Uniquely identifies the console's model. Even more accurately than the model name.
 
-* __Console ID__: Contains the EMCS ID, (another version of) model ID and serial number.
+  * __Console ID__: Contains the EMCS ID, (another version of) model ID and serial number.
 
-* __M Renewal Date__: What this represents is unclear. It's something related to the MECHACON (date of firmware build or EEPROM settings update?)
+  * __M Renewal Date__: What this represents is unclear. It's something related to the MECHACON (date of firmware build or EEPROM settings update?)
 
-* __ADD0x010__: An ID that is used by the SONY service tools to identify major revisions. Originally at word 0x010 of the EEPROM, it was moved to word 0x01 for the Dragon models. It does not always correspond with the chassis models (i.e. C and D-chassis have the same ID). It can also identify the loadout of the console, like its CEX/DEX status and the OP block installed (i.e. SANYO or SONY).
+  * __ADD0x010__: An ID that is used by the SONY service tools to identify major revisions. Originally at word 0x010 of the EEPROM, it was moved to word 0x01 for the Dragon models. It does not always correspond with the chassis models (i.e. C and D-chassis have the same ID). It can also identify the loadout of the console, like its CEX/DEX status and the OP block installed (i.e. SANYO or SONY).
 
-* __PS1DRV Version__: The version number of the PlayStation driver. The earliest ROMs do not have PS1VER in ROM.  For Japan, only the SCPH-10000 and SCPH-15000 lack this file. "1.01" is hardcoded. For other territories (should be only the earliest SCPH-30001), "1.10" is hardcoded. The SCPH-75000 and later have a universal PS1DRV module, while earlier versions were tailored for the region of PS2 (Japan, USA, Europe, Asia or China).
+  * __PS1DRV Version__: The version number of the PlayStation driver. The earliest ROMs do not have PS1VER in ROM.  For Japan, only the SCPH-10000 and SCPH-15000 lack this file. "1.01" is hardcoded. For other territories (should be only the earliest SCPH-30001), "1.10" is hardcoded. The SCPH-75000 and later have a universal PS1DRV module, while earlier versions were tailored for the region of PS2 (Japan, USA, Europe, Asia or China).
 
-* __DVD Player Version__: The version number of the built-in DVD player, if applicable. Note: Slimline consoles that had the SSBUS I/F Controller integrated into the IOP will report their SSBUS I/F controllers as version 0x31 as well. Due to some controllers reporting the same version number (0x31), they will be all identified as a "CXD9611" since they are supposed to be fully compatible anyway.
+  * __DVD Player Version__: The version number of the built-in DVD player, if applicable. Note: Slimline consoles that had the SSBUS I/F Controller integrated into the IOP will report their SSBUS I/F controllers as version 0x31 as well. Due to some controllers reporting the same version number (0x31), they will be all identified as a "CXD9611" since they are supposed to be fully compatible anyway.
 
 </p>
 </details>
@@ -302,12 +302,11 @@ with the exception of the CXD9611R.
 
 This software may have been worked on mainly by me, but I had the support of other users:
 	
-- l_Oliveira, for providing a number of test reports and giving suggestions for its design during development.
-- Berion, for the icons.
-- florin and the original developers of the PS2 dumper v2 tool, since I disassembled that dumper for ideas.
-- Vigilante, for corrections on the CRC values for some ROMs.
-- ...and various sources for their dumps from the rare and obscure PS2 models!
-
+  - l_Oliveira, for providing a number of test reports and giving suggestions for its design during development.
+  - Berion, for the icons.
+  - florin and the original developers of the PS2 dumper v2 tool, since I disassembled that dumper for ideas.
+  - Vigilante, for corrections on the CRC values for some ROMs.
+  - ...and various sources for their dumps from the rare and obscure PS2 models!
 
 </p>
 </details>
@@ -316,14 +315,13 @@ This software may have been worked on mainly by me, but I had the support of oth
   <summary> <b> Old data contributers (removed): </b> </summary>
 <p>
 
-
 01.	SCPH-70004	GH-032-11		Anonymous (K)	Old dump format
 02.	SCPH-70004	GH-035-11		Anonymous (K)	Old dump format
 03.	SCPH-70004	GH-035-62		Anonymous (K)	Old dump format
 04.	SCPH-75003	GH-041-04		Anonymous (K)	Old dump format
 05.	SCPH-75004	GH-040-02		Anonymous (K)	Old dump format
-07.	SCPH-75008	GH-040-02		denben0487	Old dump format
 06.	SCPH-77004	GH-052-51 (GS 1.13)	Anonymous (K)	Old dump format
+07.	SCPH-75008	GH-040-02		denben0487	Old dump format
 08.	DESR-5500	XPD-005			vitas		Old dump format
 09.	DTL-H10000S	GH-001			cde		Bad dump (hardware problem?)
 
@@ -335,13 +333,13 @@ This software may have been worked on mainly by me, but I had the support of oth
 <p>
 
 
-- Japanese translation *: Unassigned.
-- German translation (completed): Delta_force
-- French translation (completed): ShaolinAssassin
-- Italian translation (completed)*: master991
-- Spanish translation (completed): ElPatas
-- Dutch translation (completed)*: Someone who wishes to remain anonymous.
-- Portuguese translation (completed): Gillbert
+  - Japanese translation *: Unassigned.
+  - German translation (completed): Delta_force
+  - French translation (completed): ShaolinAssassin
+  - Italian translation (completed)*: master991
+  - Spanish translation (completed): ElPatas
+  - Dutch translation (completed)*: Someone who wishes to remain anonymous.
+  - Portuguese translation (completed): Gillbert
 
 And to all users who contributed test data for the early PS2Ident builds!
 
