@@ -210,8 +210,6 @@ DTL dragon models report itself as odd numbered chip, but chip itself is the sam
 </p>
 </details>
 
-
-
 <details>
   <summary> <b> Known chassis versions (this list maybe is not complete): </b> </summary>
 <p>
@@ -301,15 +299,15 @@ with the exception of the CXD9611R.
 <details>
   <summary> <b> Credits: </b> </summary>
 <p>
+
+This software may have been worked on mainly by me, but I had the support of other users:
 	
-```
-	This software may have been worked on mainly by me, but I had the support of other users:
-			l_Oliveira, for providing a number of test reports and giving suggestions for its design during development.
-		Berion, for the icons.
-		florin and the original developers of the PS2 dumper v2 tool, since I disassembled that dumper for ideas.
-		Vigilante, for corrections on the CRC values for some ROMs.
-		...and various sources for their dumps from the rare and obscure PS2 models!
-```
+- l_Oliveira, for providing a number of test reports and giving suggestions for its design during development.
+- Berion, for the icons.
+- florin and the original developers of the PS2 dumper v2 tool, since I disassembled that dumper for ideas.
+- Vigilante, for corrections on the CRC values for some ROMs.
+- ...and various sources for their dumps from the rare and obscure PS2 models!
+
 
 </p>
 </details>
@@ -318,17 +316,16 @@ with the exception of the CXD9611R.
   <summary> <b> Old data contributers (removed): </b> </summary>
 <p>
 
-```
-	01	SCPH-70004	GH-032-11		Anonymous (K)	Old dump format
-	02	SCPH-70004	GH-035-11		Anonymous (K)	Old dump format
-	03	SCPH-70004	GH-035-62		Anonymous (K)	Old dump format
-	04	SCPH-75003	GH-041-04		Anonymous (K)	Old dump format
-	05	SCPH-75004	GH-040-02		Anonymous (K)	Old dump format
-	07	SCPH-75008	GH-040-02		denben0487	Old dump format
-	06	SCPH-77004	GH-052-51 (GS 1.13)	Anonymous (K)	Old dump format
-	08	DESR-5500	XPD-005			vitas		Old dump format
-	09	DTL-H10000S	GH-001			cde		Bad dump (hardware problem?)
-```
+
+01.	SCPH-70004	GH-032-11		Anonymous (K)	Old dump format
+02.	SCPH-70004	GH-035-11		Anonymous (K)	Old dump format
+03.	SCPH-70004	GH-035-62		Anonymous (K)	Old dump format
+04.	SCPH-75003	GH-041-04		Anonymous (K)	Old dump format
+05.	SCPH-75004	GH-040-02		Anonymous (K)	Old dump format
+07.	SCPH-75008	GH-040-02		denben0487	Old dump format
+06.	SCPH-77004	GH-052-51 (GS 1.13)	Anonymous (K)	Old dump format
+08.	DESR-5500	XPD-005			vitas		Old dump format
+09.	DTL-H10000S	GH-001			cde		Bad dump (hardware problem?)
 
 </p>
 </details>
@@ -337,17 +334,16 @@ with the exception of the CXD9611R.
   <summary> <b> those who volunteered to make the translations: </b> </summary>
 <p>
 
-```
-	Japanese translation *: Unassigned.
-	German translation (completed): Delta_force
-	French translation (completed): ShaolinAssassin
-	Italian translation (completed)*: master991
-	Spanish translation (completed): ElPatas
-	Dutch translation (completed)*: Someone who wishes to remain anonymous.
-	Portuguese translation (completed): Gillbert
 
-	And to all users who contributed test data for the early PS2Ident builds!
-```
+- Japanese translation *: Unassigned.
+- German translation (completed): Delta_force
+- French translation (completed): ShaolinAssassin
+- Italian translation (completed)*: master991
+- Spanish translation (completed): ElPatas
+- Dutch translation (completed)*: Someone who wishes to remain anonymous.
+- Portuguese translation (completed): Gillbert
+
+And to all users who contributed test data for the early PS2Ident builds!
 
 </p>
 </details>
