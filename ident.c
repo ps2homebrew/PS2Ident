@@ -66,8 +66,8 @@ int GetEEInformation(struct SystemInformation *SystemInformation)
     SystemInformation->mainboard.gs.id                = revision >> 8;
 
     ee_kmode_enter();
-    SystemInformation->EE_F520 = *(volatile unsigned int *)0xB000F520;
-    SystemInformation->EE_F540 = *(volatile unsigned int *)0xB000F540;
+    SystemInformation->EE_F520 = *(volatile unsigned int *)0xBFC7FF04;
+    SystemInformation->EE_F540 = *(volatile unsigned int *)0xBFC7FF52;
     SystemInformation->EE_F550 = *(volatile unsigned int *)0xB000F550;
     ee_kmode_exit();
 
@@ -814,8 +814,8 @@ int WriteSystemInformation(FILE *stream, const struct SystemInformation *SystemI
     fprintf(stream, "EE/GS:\r\n"
                     "    Implementation:      0x%02x\r\n"
                     "    Revision:            %u.%u (%s)\r\n"
-                    "    EE_F520:             0x%08x\r\n"
-                    "    EE_F540:             0x%08x\r\n"
+                    "    Romver Real:         0x%08x\r\n"
+                    "    ps1drv real:         0x%08x\r\n"
                     "    EE_F550:             0x%08x\r\n"
                     "    FPU implementation:  0x%02x\r\n"
                     "    FPU revision:        %u.%u\r\n"
