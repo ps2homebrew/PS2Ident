@@ -69,7 +69,7 @@ int GetEEInformation(struct SystemInformation *SystemInformation)
      /* SystemInformation->EE_F520 = *(volatile unsigned int *)0xBFC7FF04;
     SystemInformation->EE_F540 = *(volatile unsigned int *)0xBFC7FF52; */
     SystemInformation->EE_F520 = 0;
-    ystemInformation->EE_F540 = 0;
+    SystemInformation->EE_F540 = 0;
     SystemInformation->EE_F550 = *(volatile unsigned int *)0xB000F550;
     ee_kmode_exit();
 
