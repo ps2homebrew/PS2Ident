@@ -612,6 +612,8 @@ int InitializeUI(int BufferFont)
     result = 0;
     if ((language = configGetLanguage()) >= NUM_SUPPORTED_LANGUAGES)
         language = LANGUAGE_ENGLISH;
+    
+    language = LANGUAGE_ENGLISH;
     memset(LangStringWrapTable, 0, sizeof(LangStringWrapTable));
 
     DEBUG_PRINTF("InitializeUI: language is: %u\n", language);
