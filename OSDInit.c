@@ -197,6 +197,7 @@ static int GetConsoleRegion(void)
                 case 'J':
                     ConsoleRegion = CONSOLE_REGION_JAPAN;
             }
+            if (romver[4] == 'T' && romver[5] == 'Z') ConsoleRegion = CONSOLE_REGION_JAPAN;
 
             result = ConsoleRegion;
         }

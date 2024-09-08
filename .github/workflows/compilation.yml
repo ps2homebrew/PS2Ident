@@ -81,6 +81,26 @@ jobs:
           LICENSE_OFL.txt
           *.ttf
 
+    - name: Compile ARCADE version
+      continue-on-error: true
+      run: |
+        make clean
+        make COH=1 DEBUG=1 EE_SIO=1 DISABLE_ILINK_DUMPING=1 DSNET_HOST_SUPPORT=1
+
+    - name: Upload ARCADE artifacts
+      if: ${{ success() }}
+      continue-on-error: true
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-ARCADE
+        path: |
+          PS2Ident_np.elf
+          PS2Ident.db
+          README.md
+          changelog.txt
+          LICENSE_OFL.txt
+          *.ttf
+
     # 'path' will create artifact with all *.elf in working directory
     # you can change this
 
@@ -159,6 +179,16 @@ jobs:
       run: |
         7z a ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PS2TOOL.7z PS2Ident-PS2TOOL/*
 
+    - name: Download PS2Ident for ARCADE artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-ARCADE
+        path: PS2Ident-ARCADE
+
+    - name: Prepare PS2Ident for ARCADE archive
+      run: |
+        7z a ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-ARCADE.7z PS2Ident-ARCADE/*
+
     - name: Download ps2idbms artifact
       uses: actions/download-artifact@v4.1.7
       with:
@@ -180,6 +210,7 @@ jobs:
         files: |
           ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}.7z
           ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-PS2TOOL.7z
+          ${{ steps.slug.outputs.REPOSITORY_NAME }}-${{ steps.slug.outputs.sha8 }}-ARCADE.7z
           PS2IDBMS.exe
           ROMIMG.exe
 

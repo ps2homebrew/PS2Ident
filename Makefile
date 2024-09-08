@@ -4,8 +4,10 @@ DSNET_HOST_SUPPORT = 0
 DEBUG = 0
 DISABLE_ILINK_DUMPING = 0
 
-EE_BIN = PS2Ident_np.elf
-EE_PACKED_BIN = PS2Ident.elf
+BASENAME = PS2Ident
+
+EE_BIN = $(BASENAME)_np.elf
+EE_PACKED_BIN = $(BASENAME).elf
 
 #IOP modules
 EE_IOP_OBJS = SIO2MAN_irx.o MCMAN_irx.o MCSERV_irx.o PADMAN_irx.o POWEROFF_irx.o PS2DEV9_irx.o USBD_irx.o USBHDFSD_irx.o USBHDFSDFSV_irx.o SYSMAN_irx.o IOPRP_img.o
@@ -22,15 +24,26 @@ EE_CFLAGS += -D_EE -O2 -mgpopt $(EE_GPVAL)
 EE_TEMP_FILES = SIO2MAN_irx.c MCMAN_irx.c MCSERV_irx.c PADMAN_irx.c POWEROFF_irx.c PS2DEV9_irx.c USBD_irx.c USBHDFSD_irx.c USBHDFSDFSV_irx.c SYSMAN_irx.c buttons.c devices.c background_img.c IOPRP_img.c
 
 ifeq ($(DSNET_HOST_SUPPORT),1)
-	EE_CFLAGS += -DDSNET_HOST_SUPPORT
+  EE_CFLAGS += -DDSNET_HOST_SUPPORT
 endif
 
 ifeq ($(DEBUG),1)
-	IOP_CFLAGS += -DDEBUG
+  IOP_CFLAGS += -DDEBUG
+  EE_CFLAGS += -DDEBUG
+endif
+
+ifeq ($(EE_SIO),1)
+  EE_CFLAGS += -DEE_SIO
 endif
 
 ifeq ($(DISABLE_ILINK_DUMPING),1)
-	IOP_CFLAGS += -DDISABLE_ILINK_DUMPING
+  IOP_CFLAGS += -DDISABLE_ILINK_DUMPING
+endif
+
+ifneq (x$(COH),x)
+  IOPRP_SOURCE = irx/ioprp_coh.img
+else
+  IOPRP_SOURCE = irx/ioprp.img
 endif
 
 %.o : %.c
@@ -97,7 +110,7 @@ buttons.c:
 devices.c:
 	bin2c resources/devices.png devices.c devices
 
-IOPRP_img.c:
-	bin2c irx/ioprp.img IOPRP_img.c IOPRP_img
+IOPRP_img.c: $(IOPRP_SOURCE)
+	bin2c $< IOPRP_img.c IOPRP_img
 
 include $(PS2SDK)/samples/Makefile.pref

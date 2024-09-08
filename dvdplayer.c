@@ -47,7 +47,7 @@ int DVDPlayerInit(void)
             ROMDVDPlayer.region = 'J';
         //I guess, this would be another possibility for such a case, but not used in practice:
         //	ROMDVDPlayer.region = -2;
-
+        if (ConsoleROMVER[5] == 'Z' && ConsoleROMVER[4] == 'T') ROMDVDPlayer.region = 'J'; //namco arcade also lacks this
         return 0;
     }
 
